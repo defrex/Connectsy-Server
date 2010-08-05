@@ -1,5 +1,6 @@
 import uuid
 from tornado.web import HTTPError
+from pymongo import DESCENDING
 
 import db
 from utils import timestamp, require_auth
@@ -41,10 +42,8 @@ class EventsHandler(BaseHandler):
         Gets a list of events
         TODO - make the list relative to the user
         '''
-        result = {u'events': [e[u'revision'] for e in db.objects.event.find()]}
-        #events = self.db.events.find()
-        #for event in [e['revision'] for e in events]:
-        #    result['events'].append(event)
+        events = db.objects.event.find().sort('created', direction=DESCENDING)
+        result = {u'events': [e[u'revision'] for e in events]}
         self.write(result)
 
 
