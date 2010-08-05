@@ -20,12 +20,10 @@ class EventsHandler(BaseHandler):
             event[u'where'] = req_body[u'where']
             event[u'when'] = req_body[u'when']
             event[u'desc'] = req_body[u'desc']
-            event[u'posted_from'] = req_body[u'posted_from']
-            if u'category' in req_body:
-                event[u'category'] = req_body[u'category']
-            else:
-                event[u'category'] = ''
+            event[u'location'] = req_body.get(u'location', '')
+            event[u'category'] = req_body.get(u'category', '')
         except KeyError:
+            raise
             raise HTTPError(400) #TODO - detail what was missing
         else:
             event[u'creator'] = self.get_session()[u'username']

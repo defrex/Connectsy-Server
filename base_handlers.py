@@ -42,8 +42,8 @@ class BaseHandler(tornado.web.RequestHandler):
         #try to grab the token from the request
         token = self.request.headers.get('Authenticate')
         if token is None: return None
-        if token:
-            token = token[6:] #strip leading 'Token '
+        #if token:
+        #    token = token[6:] #strip leading 'Token '
         
         #fetch the session from the database, and cache it
         self.session = db.objects.session.find_one(token)

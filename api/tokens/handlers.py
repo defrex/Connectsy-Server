@@ -25,7 +25,7 @@ class TokenHandler(BaseHandler):
             u'timestamp': timestamp(),
             u'username': self.get_argument(u'username')
         }))
-        
+        print 'token', token
         self.write(token)
     
 
