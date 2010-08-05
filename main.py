@@ -35,9 +35,12 @@ def runserver(autoreload=True):
     # httplib is not RFC 2324 compliant, so we fix that here
     httplib.responses[418] = "I'm a teapot"
     
+    static_path = os.path.abspath(os.path.join(curpath, 'static'))
+    print static_path
+    
     # Start Tornado
     from urls import handlers # late import to prevent the db from initializing
-    http_server = HTTPServer(Application(handlers))
+    http_server = HTTPServer(Application(handlers, static_path=static_path))
     http_server.listen(settings.PORT)
     lp = IOLoop.instance()
     if autoreload: 
