@@ -41,7 +41,7 @@ class EventsHandler(BaseHandler):
         Gets a list of events
         TODO - make the list relative to the user
         '''
-        events = db.objects.event.find().sort('created', direction=DESCENDING)
+        events = db.objects.event.find().sort(u'created', direction=DESCENDING)
         result = {u'events': [e[u'revision'] for e in events]}
         self.write(result)
 
