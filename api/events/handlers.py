@@ -24,7 +24,6 @@ class EventsHandler(BaseHandler):
             event[u'location'] = req_body.get(u'location', '')
             event[u'category'] = req_body.get(u'category', '')
         except KeyError:
-            raise
             raise HTTPError(400) #TODO - detail what was missing
         else:
             event[u'creator'] = self.get_session()[u'username']
