@@ -22,6 +22,5 @@ def attendance(obj):
 def user(obj):
     del obj[u'password']
     del obj[u'_id']
-    del obj[u'created']
 
     return obj
