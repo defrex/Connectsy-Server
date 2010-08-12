@@ -24,8 +24,8 @@ def auth():
 def require_keys(body, *args):
     keys = body.keys()
     for key in args:
-        assert key in keys, 'Returned object in correct format'
-    assert len(keys) == len(args), 'Returned object in correct format'
+        assert key in keys, 'Returned object has key %s' % key
+    assert len(keys) == len(args), 'Returned object has the correct number of keys'
     
 # User tests
 @status_is(201)
@@ -71,12 +71,12 @@ def test_get_event_list(status, body):
 def test_get_event(status, body):
     require_keys(body, u'event')
     
-    require_keys(body[u'event'], u'where', u'when', u'desc', u'posted_from', u'category',
-            u'creator', u'created', u'revision', u'id')
+    require_keys(body[u'event'], u'where', u'when', u'desc', u'posted_from', 
+            u'category', u'creator', u'created', u'revision', u'id', u'location')
     #TODO - verify content, we probably want to set up something to make this
     #       not a pain in the ass; share the dict.  do this when the tests
     #       are cleaned up
-    
+
 @status_is(200)
 def test_delete_event(status, body):
     pass
