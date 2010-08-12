@@ -46,6 +46,7 @@ class EventsHandler(BaseHandler):
         sort = self.get_argument('sort', None)
         
         #set up the base query
+        # commented out until this is sorted out
         #if sort is None or sort == u'nearby':
         #    #grab lat/lng from the query, defaulting to toronto
         #    lat = self.get_argument('lat', 43.652527)
