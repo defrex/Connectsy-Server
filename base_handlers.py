@@ -62,7 +62,7 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         session = self.get_session()
         return session and db.objects.user.find_one(session['user'])
-        
+    
     def require_args(self, *args):
         '''
         Ensures that the argument names passed to the function are preset
