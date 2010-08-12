@@ -56,6 +56,7 @@ class EventsHandler(BaseHandler):
         #    sort = sort or 'soon'
         #else:
         #    events = db.objects.event.find()
+        
         events = db.objects.event.find()
             
         #perform the required sorting
