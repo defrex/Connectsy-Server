@@ -1,6 +1,6 @@
 import uuid
 from tornado.web import HTTPError
-from pymongo import DESCENDING
+from pymongo import DESCENDING, GEO2D
 
 import db
 from utils import timestamp, require_auth
@@ -21,10 +21,9 @@ class EventsHandler(BaseHandler):
             event[u'where'] = req_body[u'where']
             event[u'when'] = req_body[u'when']
             event[u'desc'] = req_body[u'desc']
-            event[u'location'] = req_body.get(u'location', '')
-            event[u'category'] = req_body.get(u'category', '')
+            event[u'location'] = req_body[u'posted_from']
+            event[u'category'] = req_body.get(u'category', '') #optional field
         except KeyError:
-            raise
             raise HTTPError(400) #TODO - detail what was missing
         else:
             event[u'creator'] = self.get_session()[u'username']
@@ -42,7 +41,29 @@ class EventsHandler(BaseHandler):
         Gets a list of events
         TODO - make the list relative to the user
         '''
-        events = db.objects.event.find().sort('created', direction=DESCENDING)
+        #grab the sorting type from the args
+        sort = self.get_argument('sort', None)
+        
+        #set up the base query
+        if sort is None:
+            #grab lat/lng from the query, defaulting to toronto
+            lat = self.get_argument('lat', 43.652527)
+            lng = self.get_argument('lng', -79.381961)
+            where = [lat, lng]
+            events = db.objects.event.find({u'posted_from': {'$near': where}})
+            sort = 'soon'
+        else:
+            events = db.objects.event.find()
+            
+        #perform the required sorting
+        if sort == u'created':
+            events = events.sort(u'created', direction=DESCENDING)
+        elif sort == u'soon':
+            events = events.sort(u'when', direction=DESCENDING)
+        elif sort == u'nearby':
+            events = events.sort(u'posted_from', direction=GEO2D)
+            
+        #output the results
         result = {u'events': [e[u'revision'] for e in events]}
         self.write(result)
 

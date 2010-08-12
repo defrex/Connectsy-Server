@@ -117,6 +117,11 @@ def run():
     }
     do.post(test_create_event, '/events/', headers=auth(), body=json.dumps(event_dict))
     do.get(test_get_event_list, '/events/', headers=auth())
+    #test different sorts
+    #TODO - handle these and actually compare the results
+    do.get(test_get_event_list, '/events/', args={u'sort': u'created'}, headers=auth())
+    do.get(test_get_event_list, '/events/', args={u'sort': u'soon'}, headers=auth())
+    do.get(test_get_event_list, '/events/', args={u'sort': u'nearby'}, headers=auth())
     do.get(test_get_event, '/events/%s/' % revision, headers=auth())
     do.delete(test_delete_event, '/events/%s/' % revision, headers=auth())
     

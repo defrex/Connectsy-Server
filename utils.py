@@ -6,8 +6,12 @@ import settings
 
 # Normalized json import.  You should only use this for decoding, and use
 # json_encoder for encoding.
-try:    import json
-except: import simplejson as json
+try:    import simplejson as json
+except: import json
+# Note that we try to import simplejson first.  This is because simplejson
+# can optionally use a compiled C module that's much faster than the native
+# Python implementation.  The json module included with 2.6 lacks this
+# feature.
 
 # Use this for all your json encoding needs.  It will automatically
 # handle sanitization, and plays nicely with cursors from the DB.

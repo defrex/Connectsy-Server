@@ -1,6 +1,6 @@
 # We're avoiding the json import in utils due to circular import issues
-try: import json
-except: import simplejson as json
+try: import simplejson as json
+except: json
 
 from pymongo import Connection
 from pymongo.collection import Collection
@@ -161,4 +161,7 @@ class CSEncoder(json.JSONEncoder):
 # 'sanitize' method, which will return a sanitized version of the object
 # based on sanitizers defined in sanitizers.py.
 objects = CSConnection(settings.DB_NAME, settings.DB_HOST, settings.DB_PORT) 
+
+# Run the index setup file.
+import index_setup
     
