@@ -45,16 +45,17 @@ class EventsHandler(BaseHandler):
         #grab the sorting type from the args
         sort = self.get_argument('sort', None)
         
-        set up the base query
-        if sort is None or sort == u'nearby':
-            #grab lat/lng from the query, defaulting to toronto
-            lat = self.get_argument('lat', 43.652527)
-            lng = self.get_argument('lng', -79.381961)
-            where = [lat, lng]
-            events = db.objects.event.find({u'posted_from': {'$near': where}})
-            sort = sort or 'soon'
-        else:
-            events = db.objects.event.find()
+        #set up the base query
+        #if sort is None or sort == u'nearby':
+        #    #grab lat/lng from the query, defaulting to toronto
+        #    lat = self.get_argument('lat', 43.652527)
+        #    lng = self.get_argument('lng', -79.381961)
+        #    where = [lat, lng]
+        #    events = db.objects.event.find({u'posted_from': {'$near': where}})
+        #    sort = sort or 'soon'
+        #else:
+        #    events = db.objects.event.find()
+        events = db.objects.event.find()
             
         #perform the required sorting
         if sort == u'created':
