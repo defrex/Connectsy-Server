@@ -61,7 +61,7 @@ class BaseHandler(tornado.web.RequestHandler):
         no token was attached, or the token was invalid, returns None.
         '''
         session = self.get_session()
-        return session and db.objects.user.find_one(session['user'])
+        return session and db.objects.user.find_one({u'username': session[u'username']})
     
     def require_args(self, *args):
         '''

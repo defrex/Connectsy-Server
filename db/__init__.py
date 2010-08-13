@@ -1,6 +1,6 @@
 # We're avoiding the json import in utils due to circular import issues
 try: import simplejson as json
-except: json
+except: import json
 
 from pymongo import Connection
 from pymongo.collection import Collection
