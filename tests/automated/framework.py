@@ -52,21 +52,29 @@ class Runner(object):
     def __init__(self, noisy=False):
         self.connection = httplib.HTTPConnection(settings.TEST_SERVER) 
         self.noisy = noisy
+        self._callback_count = {}
         
     def __del__(self):
         self.connection.close()
         
     def _get_result(self, callback, response):
+        name = callback.func_name
+        if name in self._callback_count:
+            self._callback_count[name] += 1
+            name += str(self._callback_count[name])
+        else:
+            self._callback_count[name] = 1
+            
         try:
             callback(response.status, response.read())
             if self.noisy:
-                stdout.write('Passed %s\n' % callback.func_name)
+                stdout.write('Passed %s\n' % name)
         except CustomException, e:
-            stderr.write('Failed %s: %s\n' % (callback.func_name, e.args[0]))
+            stderr.write('Failed %s: %s\n' % (name, e.args[0]))
         except AssertionError, e:
-            stderr.write('Failed %s on: %s\n' % (callback.func_name, e.args[0]))
+            stderr.write('Failed %s on: %s\n' % (name, e.args[0]))
         except:
-            stderr.write('Failed %s with exception:\n' % (callback.func_name))
+            stderr.write('Failed %s with exception:\n' % (name))
             traceback.print_exc(file=stderr)
             
     # Testing methods.  Use these!

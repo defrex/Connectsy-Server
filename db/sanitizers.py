@@ -24,3 +24,7 @@ def user(obj):
     del obj[u'_id']
 
     return obj
+
+def friend(obj):
+    del obj[u'_id']
+    return obj

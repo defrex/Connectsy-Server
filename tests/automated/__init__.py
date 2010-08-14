@@ -14,12 +14,17 @@ from framework import Runner, json_body, status_is
 
 # Some constants we'll need throughout the tests
 username = 'testuser1'
+username2 = 'testuser2'
 password = 'foo'
-token = None # This gets filled in later.  It's kind of an ugly hack :(
+# These gets filled in later.  It's kind of an ugly hack :(
+token = None
+token2 = None 
 
 # Generates appropriate auth headesr
 def auth():
     return {'Authenticate': 'Token %s' % token}
+def auth2():
+    return {'Authenticate': 'Token %s' % token2}
     
 def require_keys(body, *args):
     keys = body.keys()
@@ -31,13 +36,19 @@ def require_keys(body, *args):
 @status_is(201)
 @json_body
 def test_create_user(status, body):
-    require_keys(body, u'revision', u'username')
+    require_keys(body, u'revision', u'username', u'created')
     assert body[u'username'] == username, 'Username is correct'
+    
+@status_is(201)
+@json_body
+def test_create_other_user(status, body):
+    require_keys(body, u'revision', u'username', u'created')
+    assert body[u'username'] == username2, 'Username is correct'
 
 @status_is(200)
 @json_body
 def test_get_user(status, body):
-    require_keys(body, u'revision', u'username')
+    require_keys(body, u'revision', u'username', u'created')
     assert body[u'username'] == username, 'Username is correct'
 
 # Token tests    
@@ -45,6 +56,11 @@ def test_get_user(status, body):
 def test_get_token(status, body):
     global token
     token = body
+    
+@status_is(200)
+def test_get_other_token(status, body):
+    global token2
+    token2 = body
     
 # Event tests
 revision = None
@@ -96,6 +112,22 @@ def test_get_attendants_list(status, body):
     assert username in body[u'attendants'], 'User in attendants'
     assert body[u'attendants'][username] == 1, 'Status is correct'
     
+# Friend tests
+
+@status_is(200)
+def test_add_friend(status, body):
+    pass
+
+@status_is(200)    
+def test_confirm_friend(status, body):
+    pass
+
+@status_is(200)
+@json_body 
+def test_get_friends(status, body):
+    require_keys(body, u'friends')
+    assert body[u'friends'] == [username], 'Friends list is correct'
+    
 def run():
     '''
     Run the automated tests
@@ -105,8 +137,15 @@ def run():
     
     # Test user functionality
     do.put(test_create_user, '/users/%s/' % username, json.dumps({'password': password}))
+    do.put(test_create_other_user, '/users/%s/' % username2, json.dumps({'password': password}))
     do.get(test_get_token, '/token/', {'username': username, 'password': password})
+    do.get(test_get_other_token, '/token/', {'username': username2, 'password': password})
     do.get(test_get_user, '/users/%s/' % username, headers=auth())
+    
+    # Test friends functionality
+    do.post(test_add_friend, '/users/%s/friends/' % username2, headers=auth())
+    do.post(test_confirm_friend, '/users/%s/friends/' % username, headers=auth2())
+    do.get(test_get_friends, '/users/%s/friends/' % username2, headers=auth())
     
     # Test event functionality
     event_dict = {

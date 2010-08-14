@@ -101,11 +101,10 @@ class AvatarHandler(BaseHandler):
         '''
         Deletes the auth'd user's avatar
         '''
-        if (self.get_current_user()[u'username'] == username):
+        if self.get_session()[u'username'] == username:
             filename = self.find_file(username)
             if filename:
                 os.remove(os.path.join(avatar_dir, filename))
         else:
             raise HTTPError(403);
-
 
