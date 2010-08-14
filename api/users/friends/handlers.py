@@ -12,7 +12,7 @@ class FriendsHandler(BaseHandler):
         status_type = status.ACCEPTED
         
         #allow users to get their pending friend requests
-        if username == self.get_session()[u'username'] && self.get_argument(u'pending', None):
+        if username == self.get_session()[u'username'] and self.get_argument(u'pending', None):
             status_type = status.PENDING
         
         list = []
