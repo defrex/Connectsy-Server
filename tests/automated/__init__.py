@@ -70,9 +70,10 @@ id = None
 @json_body
 def test_create_event(status, body):
     global revision
+    global id
     require_keys(body, u'revision', u'id')
     revision = body[u'revision']
-    id = body[u'revision']
+    id = body[u'id']
 
 @status_is(200)
 @json_body
@@ -88,7 +89,8 @@ def test_get_event(status, body):
     require_keys(body, u'event')
     
     require_keys(body[u'event'], u'where', u'when', u'desc', u'posted_from', 
-            u'category', u'creator', u'created', u'revision', u'id', u'location')
+            u'category', u'creator', u'created', u'revision', u'id', u'location',
+            u'broadcast')
     #TODO - verify content, we probably want to set up something to make this
     #       not a pain in the ass; share the dict.  do this when the tests
     #       are cleaned up
@@ -109,8 +111,8 @@ def test_get_attendants_list(status, body):
     global username
     
     require_keys(body, u'attendants', u'timestamp')
-    assert username in body[u'attendants'], 'User in attendants'
-    assert body[u'attendants'][username] == 1, 'Status is correct'
+    assert username2 in body[u'attendants'], 'User in attendants'
+    assert body[u'attendants'][username2] == 1, 'Status is correct'
     
 # Friend tests
 
@@ -128,11 +130,16 @@ def test_get_friends(status, body):
     require_keys(body, u'friends')
     assert body[u'friends'] == [username], 'Friends list is correct'
     
+@status_is(200)
+def test_invite(status, body):
+    pass
+    
 def run():
     '''
     Run the automated tests
     '''
     global revision
+    global id
     do = Runner(noisy=False)
     
     # Test user functionality
@@ -153,6 +160,7 @@ def run():
         u'when': 100,
         u'desc': u'awesomeness',
         u'posted_from': [100, 100],
+        u'broadcast': True,
     }
     do.post(test_create_event, '/events/', headers=auth(), body=json.dumps(event_dict))
     do.get(test_get_event_list, '/events/', headers=auth())
@@ -161,12 +169,19 @@ def run():
     do.get(test_get_event_list, '/events/', args={u'sort': u'created'}, headers=auth())
     do.get(test_get_event_list, '/events/', args={u'sort': u'soon'}, headers=auth())
     do.get(test_get_event_list, '/events/', args={u'sort': u'nearby'}, headers=auth())
-    do.get(test_get_event, '/events/%s/' % revision, headers=auth())
-    do.delete(test_delete_event, '/events/%s/' % revision, headers=auth())
+    do.get(test_get_event, '/events/%s/' % id, headers=auth())
+    
+    # Test invites
+    do.post(test_invite, '/events/%s/invites/' % id, headers=auth(), body=json.dumps({
+        'users': [username2],
+    }))
     
     # Test attendance functionality
-    do.post(test_set_attendance, '/events/%s/attendants/' % id, headers=auth(),
+    do.post(test_set_attendance, '/events/%s/attendants/' % id, headers=auth2(),
             body=json.dumps({u'status': 1})) #status = attending
-    do.get(test_get_attendants_list, '/events/%s/attendants/' % id, headers=auth())        
+    do.get(test_get_attendants_list, '/events/%s/attendants/' % id, headers=auth2())    
+
+    # Test event deletion
+    do.delete(test_delete_event, '/events/%s/' % id, headers=auth())
     
     

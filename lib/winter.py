@@ -207,6 +207,23 @@ class Migration(object):
             
         return self
         
+class Migrator(object):
+    def __init__(self, type):
+        self._type = type
+        
+    def tag(self, obj):
+        '''
+        Tags an object with the most recent winter revision, unless
+        they already have a winter revision.
+        '''
+        if not '_winter' in obj:
+            obj['_winter'] = managers[self._type].head
+        return obj
+        
+    def __call__(self, obj):
+        managers[self._type].migrate(obj)
+        return obj
+        
 class WinterObjects(object):
     def __init__(self):
         self._cache = {}
@@ -217,11 +234,8 @@ class WinterObjects(object):
         elif key in self._cache:
             return self._cache[key]
         else:
-            def migrator(obj):
-                managers[key].migrate(obj)
-                return obj
-            self._cache[key] = migrator
-            return migrator
+            self._cache[key] = Migrator(key)
+            return self._cache[key]
             
     def __contains__(self, key):
         return key in managers

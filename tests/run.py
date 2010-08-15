@@ -13,6 +13,10 @@ import settings
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'lib'))
 import pymongo
 
+# Import the index setup file
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'db'))
+import index_setup
+
 # Import the tests
 import automated
 import unit
@@ -20,7 +24,19 @@ import third_party
 
 def flush_db():
     c = pymongo.connection.Connection()
+    
+    #drop the entire database
     c.drop_database(settings.TEST_DB)
+    
+    #rebuild the indexes, otherwise and GEO2D stuff will be screwed
+    for collection in index_setup.indexes:
+        #build a list so we can ensure the indexes in one call
+        l = []
+        for field, direction in index_setup.indexes[collection].iteritems():
+            l.append((field, direction))
+        #ensure that the indexes exist
+        c[settings.TEST_DB][collection].ensure_index(l)
+        
     c.disconnect()
     
 def start_test_server():

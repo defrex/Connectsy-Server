@@ -84,8 +84,13 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         Parses the request body as JSON, and returns the dict representation
         '''
+        #memoize
+        if hasattr(self, '_body_dict'):
+            return self._body_dict
+            
         try:
-            return json.loads(self.request.body)
+            self._body_dict = json.loads(self.request.body)
+            return self._body_dict
         except Exception, e:
             raise HTTPError(400, e.args[0])
         

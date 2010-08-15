@@ -38,8 +38,6 @@ class FriendsHandler(BaseHandler):
         friend = db.objects.friend.find_one({u'from': username,
                 u'to': client_user, u'status': status.PENDING})
         if friend:
-            print 'confirmed friend'
-            print friend
             db.objects.friend.update({'_id': friend['_id']}, {'$set': {u'status': status.ACCEPTED}})
         #otherwise, create a pending friendship
         else:

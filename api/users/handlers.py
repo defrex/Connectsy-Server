@@ -32,6 +32,7 @@ class UserHandler(BaseHandler):
         
         #sanitize the user manually, since it didn't come from the db
         user['_id'] = 0 #fake id so the sanitizer works
+        del user['_winter'] #delete the winter revision
         user = db.sanitizers.user(user)
         
         #write the user to the response

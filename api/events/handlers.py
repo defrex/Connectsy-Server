@@ -21,6 +21,7 @@ class EventsHandler(BaseHandler):
             event[u'where'] = req_body[u'where']
             event[u'when'] = req_body[u'when']
             event[u'desc'] = req_body[u'desc']
+            event[u'broadcast'] = req_body[u'broadcast']
             event[u'posted_from'] = req_body[u'posted_from']
             event[u'location'] = req_body.get(u'location', '')
             event[u'category'] = req_body.get(u'category', '') #optional field
@@ -71,24 +72,25 @@ class EventsHandler(BaseHandler):
 class EventHandler(BaseHandler):
     
     @require_auth
-    def delete(self, revision):
+    def delete(self, event_id):
         '''
         Deletes an event, if the current user it that event's owner.
         
         TODO - enforce user restrictions
         TODO - notifications
+        TODO - remove associated attendance
         '''
-        obj = db.objects.event.find_one({u'revision': revision})
+        obj = db.objects.event.find_one(event_id)
         db.objects.event.remove(obj[u'_id'], safe=True)
         self.finish()
     
     @require_auth
-    def get(self, revision):
+    def get(self, event_id):
         '''
         TODO - enforce user restrictions
         '''
         #grab the event from the database
-        event = db.objects.event.find_one({u'revision': revision})
+        event = db.objects.event.find_one(event_id)
         if event is None: raise HTTPError(404)
         
         response = {'event': event}

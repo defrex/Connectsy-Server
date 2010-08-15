@@ -28,7 +28,7 @@ class AttendanceHandler(BaseHandler):
         
         #grab user and status from each attendance objects
         for att in atts:
-            result[u'attendants'][att[u'user']] = att[u'status']
+            result[u'attendants'][att[u'username']] = att[u'status']
         
         self.write(result)
         
@@ -38,6 +38,23 @@ class AttendanceHandler(BaseHandler):
         Updates an invitee's attendance
         '''
         body = self.body_dict()
+        username = self.get_session()[u'username']
+        
+        #make sure the event exists
+        event = db.objects.event.find_one(event_id)
+        if not event:
+            raise HTTPError(404)
+            
+        #try to grab the user's existing attendance status
+        att = db.objects.attendance.find_one({u'event': event['_id'],
+                u'username': username})
+                
+        #if the user isn't invited, we need to error out if broadcast is off
+        if att is None:
+            if event[u'broadcast']:
+                att = {u'username': username, u'event': event_id}
+            else:
+                raise HTTPError(403)
         
         # create a list of acceptable statuses
         valid_statuses = [v for k, v in status.__dict__.iteritems() if k[0] != '_']
@@ -45,16 +62,10 @@ class AttendanceHandler(BaseHandler):
         #make sure status is present and a correct value
         if body.get(u'status') not in valid_statuses:
             raise HTTPError(400)
-        
-        user = {u'user': self.get_session()[u'username']}
             
-        # We want to overwrite the previous user object, but we can
-        # actually share the modification code, since everything but
-        # the user id and event is changing.
-        att = db.objects.attendance.find_one(user) or user
+        #update or create the attendance status
         att[u'timestamp'] = timestamp()
         att[u'status']    = body[u'status']
-        att[u'event']     = event_id
         db.objects.attendance.insert(att)
         
         # Hooray!

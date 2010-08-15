@@ -92,6 +92,18 @@ class CSCollection(Collection):
             
         result = Collection.find(self, *args, **kwargs)
         return CSCursor(result)
+        
+    def insert(self, doc_or_docs, *args, **kwargs):
+        #tag incoming objects with the winter head revision if they don't
+        #already have a rev number
+        if isinstance(doc_or_docs, list):
+            for doc in doc_or_docs:
+                getattr(winter.objects, self.name).tag(doc)
+        else:
+            getattr(winter.objects, self.name).tag(doc_or_docs)
+            
+        return Collection.insert(self, doc_or_docs, *args, **kwargs)
+            
        
 class CSConnection(object):
     '''
@@ -122,6 +134,9 @@ class CSConnection(object):
         else:
             #trust me, you want this here.
             raise Exception('No collection "%s" registered with winter' % obj)
+            
+    def __getitem__(self, obj):
+        return self.__getattr__(obj)
         
 class CSEncoder(json.JSONEncoder):
     '''
@@ -162,6 +177,13 @@ class CSEncoder(json.JSONEncoder):
 # based on sanitizers defined in sanitizers.py.
 objects = CSConnection(settings.DB_NAME, settings.DB_HOST, settings.DB_PORT) 
 
-# Run the index setup file.
-import index_setup
+# Set up the indexes
+from index_setup import indexes
+for collection in indexes:
+    #build a list so we can ensure the indexes in one call
+    l = []
+    for field, direction in indexes[collection].iteritems():
+        l.append((field, direction))
+    #ensure that the indexes exist
+    objects[collection].ensure_index(l)
     
