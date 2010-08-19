@@ -72,7 +72,7 @@ class EventsHandler(BaseHandler):
 class EventHandler(BaseHandler):
     
     @require_auth
-    def delete(self, event_id):
+    def delete(self, revision):
         '''
         Deletes an event, if the current user it that event's owner.
         
@@ -80,17 +80,20 @@ class EventHandler(BaseHandler):
         TODO - notifications
         TODO - remove associated attendance
         '''
-        obj = db.objects.event.find_one(event_id)
+        obj = db.objects.event.find_one({u'revision': revision})
+        if obj is None:
+            raise HTTPError(404)
+            
         db.objects.event.remove(obj[u'_id'], safe=True)
         self.finish()
     
     @require_auth
-    def get(self, event_id):
+    def get(self, revision):
         '''
         TODO - enforce user restrictions
         '''
         #grab the event from the database
-        event = db.objects.event.find_one(event_id)
+        event = db.objects.event.find_one({u'revision': revision})
         if event is None: raise HTTPError(404)
         
         response = {'event': event}

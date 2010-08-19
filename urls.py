@@ -13,7 +13,7 @@ handlers = [
     (r"/users/(?P<username>\w*)/friends/", FriendsHandler),
     (r"/users/(?P<username>\w*)/friends/(?P<friend>\w*)/", FriendHandler),
     (r"/events/", EventsHandler),
-    (r"/events/(?P<event_id>\w*)/", EventHandler),
+    (r"/events/(?P<revision>\w*)/", EventHandler),
     (r"/events/(?P<event_id>\w*)/invites/", InvitesHandler),
     (r"/events/(?P<event_id>\w*)/attendants/", AttendanceHandler),
 ]

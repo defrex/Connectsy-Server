@@ -169,7 +169,7 @@ def run():
     do.get(test_get_event_list, '/events/', args={u'sort': u'created'}, headers=auth())
     do.get(test_get_event_list, '/events/', args={u'sort': u'soon'}, headers=auth())
     do.get(test_get_event_list, '/events/', args={u'sort': u'nearby'}, headers=auth())
-    do.get(test_get_event, '/events/%s/' % id, headers=auth())
+    do.get(test_get_event, '/events/%s/' % revision, headers=auth())
     
     # Test invites
     do.post(test_invite, '/events/%s/invites/' % id, headers=auth(), body=json.dumps({
@@ -182,6 +182,6 @@ def run():
     do.get(test_get_attendants_list, '/events/%s/attendants/' % id, headers=auth2())    
 
     # Test event deletion
-    do.delete(test_delete_event, '/events/%s/' % id, headers=auth())
+    do.delete(test_delete_event, '/events/%s/' % revision, headers=auth())
     
     
