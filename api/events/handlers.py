@@ -25,7 +25,8 @@ class EventsHandler(BaseHandler):
             event[u'posted_from'] = req_body[u'posted_from']
             event[u'location'] = req_body.get(u'location', '')
             event[u'category'] = req_body.get(u'category', '') #optional field
-        except KeyError:
+        except KeyError, e:
+            print e
             raise HTTPError(400) #TODO - detail what was missing
         else:
             event[u'creator'] = self.get_session()[u'username']
@@ -49,8 +50,8 @@ class EventsHandler(BaseHandler):
         #set up the base query
         if sort is None or sort == u'nearby':
             #grab lat/lng from the query, defaulting to toronto
-            lat = self.get_argument('lat', 43.652527)
-            lng = self.get_argument('lng', -79.381961)
+            lat = float(self.get_argument('lat', '43.652527'))
+            lng = float(self.get_argument('lng', '-79.381961'))
             where = [lat, lng]
             events = db.objects.event.find({u'posted_from': {u'$near': where}})
             sort = sort or 'soon'

@@ -8,6 +8,7 @@ from tornado.web import HTTPError
 
 import db
 from utils import json, json_encoder
+import settings
 
 class BaseHandler(tornado.web.RequestHandler):
     
@@ -101,7 +102,7 @@ class MainHandler(BaseHandler):
     def get(self):
         version = u'0.2'
         mode = u'Development' if settings.DEVELOPMENT else u'Production'
-        uptime = (time.time() - start_time()) / 1000
+        uptime = (time.time() - start_time) / 1000
         
         self.set_status(418)
         self.set_header('X-Server', 'Connectsy-Teapot/0.1 Freshly Brewed')

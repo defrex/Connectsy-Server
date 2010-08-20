@@ -16,9 +16,11 @@ class FriendsHandler(BaseHandler):
             status_type = status.PENDING
         
         list = []
-        list += [friend[u'to'] for friend in db.objects.friend.find({u'from': username, u'status': status_type})]
-        list += [friend[u'from'] for friend in db.objects.friend.find({u'to': username, u'status': status_type})]
-        
+        list += [friend[u'to'] for friend in db.objects.friend.find({u'from':
+                username, u'status': status_type})]
+        list += [friend[u'from'] for friend in db.objects.friend.find({u'to':
+                username, u'status': status_type})]
+        print 'output for status', status_type, list
         self.output({u'friends': list})
         
     @require_auth
@@ -30,15 +32,21 @@ class FriendsHandler(BaseHandler):
             return
             
         #make sure that this user actually exists
-        if not db.objects.user.find_one({u'username': client_user}):
+        if not db.objects.user.find_one({u'username': username}):
             return HTTPError(404)
-            
+        
+        #check for dups
+        if db.objects.friend.find_one({u'to': username,
+                u'from': client_user, u'status': status.PENDING}):
+            return HTTPError(409)
+        
         #if a friend requests from this person to the auth'd client exists,
-        #then this PUT is a confirmation
+        #then this POST is a confirmation
         friend = db.objects.friend.find_one({u'from': username,
                 u'to': client_user, u'status': status.PENDING})
         if friend:
-            db.objects.friend.update({'_id': friend['_id']}, {'$set': {u'status': status.ACCEPTED}})
+            db.objects.friend.update({'_id': friend['_id']}, {'$set':
+                    {u'status': status.ACCEPTED}})
         #otherwise, create a pending friendship
         else:
             friend = {u'from': client_user, u'to': username, u'status': status.PENDING}
