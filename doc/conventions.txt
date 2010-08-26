@@ -1,0 +1,25 @@
+= Handler Naming =
+For a handler that serves information on multiple objects, use a plural form.
+For a handler that will serve data for only a specific object, use the singular form.
+
+Example:
+FriendHandler - Manages information on a certain friend
+FriendsHandler - Manages information on all friends
+
+= Unicode =
+Use it pretty much everywhere.  All data to/from the client must be treated as unicode, and all database objects should use unicode objects for keys.
+
+The only exceptions to this rule are data that are known to be ASCII; for example, HTTP headers.
+
+Special care should be taken with regards to PyMongo.  In the official documentation, special keys or sorting queries use plain bitstrings rather than unicode (for example, '_id' and $-style queries).  My suspicion is that this is simply an oversight and that unicode will work just fine, but we should still stick to the canonical form given in the documentation whenever possible.  With that said, the PyMongo driver doesn't appear to be written using standard Python idioms, which probably indicates that the author isn't a particularly experienced Python developer.  This may indicate bugs or other mistakes, so we may very well have to use unicode in cases.  All said, just be aware of it.
+
+= Urls =
+Always, always ensure that path argument regexes use consistent names.
+
+This is bad:
+    /events/(?P<event_id>\w*)/foo
+    /events/(?P<event>\w*)/bar
+
+This is good:
+    /events/(?P<event_id>\w*)/foo
+    /events/(?P<event_id>\w*)/bar
