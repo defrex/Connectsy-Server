@@ -35,3 +35,6 @@ def comment(obj):
     del obj['nonce']
     del obj['event']
     return obj
+    
+def notification_reg(obj):
+    return obj
