@@ -37,7 +37,7 @@ class Notifier(object):
     prepared to deal with the consequences of an abnormal shutdown.
     '''
     
-    def send(user, client_id, message_data):
+    def send(self, user, client_id, message_data):
         '''
         Sends a message to a client with the given ID.  The supplied
         `client_id` and `user` arguments can be used to pull a unique

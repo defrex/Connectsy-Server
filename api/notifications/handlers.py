@@ -1,6 +1,7 @@
 from tornado.web import HTTPError
 
 import db
+from notifications import notifiers
 from utils import timestamp, require_auth
 from base_handlers import BaseHandler
 
@@ -15,7 +16,7 @@ class RegistrationHandler(object):
             raise HTTPError(400)
             
         #ensure the client supported
-        if not client supported:
+        if not client in notifiers:
             raise HTTPError(501)
             
         #add the record to the db
@@ -25,6 +26,6 @@ class RegistrationHandler(object):
             u'client_id': body[u'client_id'],
             #the client_extra field is optional, but we want the field present
             #in the db even if the client didn't supply it
-            u'client_extra': body[u'client_extra'] \
-                if u'client_extra' in body else None
+            u'client_extra': body[u'client_extra'] if u'client_extra' in body \
+                else None
         })
