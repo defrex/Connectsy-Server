@@ -57,7 +57,7 @@ class EventsHandler(BaseHandler):
             sort = sort or 'soon'
         else:
             events = db.objects.event.find()
-            
+        
         #perform the required sorting
         if sort == u'created':
             events = events.sort(u'created', direction=DESCENDING)
