@@ -7,7 +7,7 @@ import json
 class CategoriesHandler(BaseHandler):
     
     def get(self):
-        self.write(json.dumps([
+        self.output([
             {'categories': [{'name': 'baseball\n'},
                              {'name': 'basketball\n'},
                              {'name': 'bike riding/cycling\n'},
@@ -61,4 +61,4 @@ class CategoriesHandler(BaseHandler):
                                              {'name': 'other '}],
                               'name': 'video games\n'}],
               'name': 'Games & Activites\n'}
-        ]))
+        ])
