@@ -28,7 +28,7 @@ class CommentsHandler(BaseHandler):
             u'event': event_id,
         }
         if since:
-            query[u'since'] = {'$gt': since}
+            query[u'timestamp'] = {'$gt': since}
         
         #show them comments!
         comments = db.object.comment.find(query).sort(u'timestamp', pymongo.ASCENDING)

@@ -6,6 +6,7 @@ from tornado.web import HTTPError
 import db
 from utils import json_encoder, hash, require_auth, timestamp
 from base_handlers import BaseHandler
+from friends import status
 
 class UserHandler(BaseHandler):
     def put(self, username):
@@ -42,6 +43,19 @@ class UserHandler(BaseHandler):
     def get(self, username):
         u = db.objects.user.find_one({u'username': username})
         if u is None: raise HTTPError(404)
+        
+        #get friend status
+        cur_user = self.get_session()[u'username']
+        friend_status = db.objects.friend.find({u'from': username, 'to': cur_user}) or \
+            db.objects.friend.find({u'to': username, 'from': cur_user})
+        friend_status = friend_status and friend_status[u'status']
+
+        if not friend_status:
+            friend_status = status.NOT_FRIEND
+       
+        u['friend_status'] = friend_status
+        
+        #write the user
         self.output(u)
 
 
