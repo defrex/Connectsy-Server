@@ -1,6 +1,6 @@
 
 from base_handlers import BaseHandler
-import json
+import db
 
 class MapsHandler(BaseHandler):
     
