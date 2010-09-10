@@ -45,7 +45,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if token is None: return None
         if token:
             #strip leading 'Token '
-            if not token.startswith('Token ')
+            if not token.startswith('Token '):
                 return None
             token = token[6:]
             
