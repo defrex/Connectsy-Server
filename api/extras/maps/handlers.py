@@ -1,4 +1,6 @@
 
+from pymongo import DESCENDING
+
 from base_handlers import BaseHandler
 import db
 
