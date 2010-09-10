@@ -45,7 +45,11 @@ class BaseHandler(tornado.web.RequestHandler):
         if token is None: return None
         if token:
             token = token[6:] #strip leading 'Token '
-        
+            #make sure the token format is correct
+            if not token.startswith('auth='):
+                return None
+            token = token[5:]
+
         #fetch the session from the database, and cache it
         self.session = db.objects.session.find_one(token)
         

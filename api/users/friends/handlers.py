@@ -20,7 +20,6 @@ class FriendsHandler(BaseHandler):
                 username, u'status': status_type})]
         list += [friend[u'from'] for friend in db.objects.friend.find({u'to':
                 username, u'status': status_type})]
-        print 'output for status', status_type, list
         self.output({u'friends': list})
         
     @require_auth
@@ -72,3 +71,4 @@ class FriendHandler(BaseHandler):
             db.objects.friend.remove({u'from': username, u'to': friend})
         else:
             return HTTPError(403)
+
