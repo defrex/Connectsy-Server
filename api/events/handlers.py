@@ -15,7 +15,7 @@ class EventsHandler(BaseHandler):
         req_body = self.body_dict()
         response = {}
         event = {}
-        from pprint import pprint; pprint(req_body)
+        
         #grab data from the user-supplied dict
         try:
             event[u'where'] = req_body[u'where']
