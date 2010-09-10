@@ -2,7 +2,7 @@
 from base_handlers import BaseHandler
 import json
 
-class CategoriesHandler(BaseHandler):
+class MapsHandler(BaseHandler):
     
     def get(self):
         #grab the sorting type from the args
