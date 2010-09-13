@@ -161,11 +161,11 @@ class CSEncoder(json.JSONEncoder):
         elif isinstance(o, dict):
             for item in o.itervalues():
                 self._walk(item)
-    
+        elif isinstance(o, Cursor):
+            return [self._walk(i) for i in o]
+
     def default(self, o):
-        if isinstance(o, Cursor):
-            return [i for i in o]
-        elif isinstance(o, ObjectId):
+        if isinstance(o, ObjectId):
             return str(o)
         elif isinstance(o, uuid.UUID):
             return o.hex
