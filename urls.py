@@ -8,6 +8,7 @@ from api.events.invites.handlers import InvitesHandler
 from api.events.attendance.handlers import AttendanceHandler
 from api.events.comments.handlers import CommentsHandler
 from api.categories.handlers import CategoriesHandler
+from api.extras.maps.handlers import MapsHandler
 
 handlers = [
     (r"/", MainHandler),
@@ -23,5 +24,6 @@ handlers = [
     (r"/events/(?P<event_id>\w*)/attendants/", AttendanceHandler),
     (r"/events/(?P<event_id>\w*)/comments/", CommentsHandler),
     (r"/categories/", CategoriesHandler),
+    (r"/extras/maps/", MapsHandler),
 ]
 
