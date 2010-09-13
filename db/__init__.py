@@ -162,7 +162,8 @@ class CSEncoder(json.JSONEncoder):
             for item in o.itervalues():
                 self._walk(item)
         elif isinstance(o, Cursor):
-            return [self._walk(i) for i in o]
+            for i in o:
+                self._walk(i)
 
     def default(self, o):
         if isinstance(o, ObjectId):
