@@ -31,7 +31,7 @@ class CommentsHandler(BaseHandler):
             query[u'timestamp'] = {'$gt': since}
         
         #show them comments!
-        comments = db.object.comment.find(query).sort(u'timestamp', pymongo.ASCENDING)
+        comments = db.objects.comment.find(query).sort(u'timestamp', pymongo.ASCENDING)
         self.output({u'comments': comments})
     
     @require_auth
