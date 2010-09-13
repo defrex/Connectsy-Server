@@ -2,6 +2,8 @@
 try: import simplejson as json
 except: import json
 
+import uuid
+
 from pymongo import Connection
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
@@ -165,6 +167,8 @@ class CSEncoder(json.JSONEncoder):
             return [i for i in o]
         elif isinstance(o, ObjectId):
             return str(o)
+        elif isinstance(o, uuid.UUID):
+            return o.hex
         else:
             return json.JSONEncoder.default(self, o)
             
