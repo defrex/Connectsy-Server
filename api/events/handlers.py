@@ -101,7 +101,7 @@ class EventHandler(BaseHandler):
         
         #give the user the attendance info if they asked for it
         if self.request.arguments.get('attendants'):
-            response['attendants'] = [a for a in db.objects.attendance.find({u'event': event[u'_id']})]
+            response['attendants'] = db.objects.attendance.find({u'event': event[u'_id']})
         
         self.output(response)
         
