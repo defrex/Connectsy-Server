@@ -20,7 +20,7 @@ from json_encoder import json_encoder #avoids a circular import
 # Timestamp generation
 import time
 def timestamp():
-    return int(time.time())
+    return int(time.time()*1000)
     
 # Generates a salted SHA1 hash of the specified value
 def hash(val):
