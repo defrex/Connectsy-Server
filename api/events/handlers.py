@@ -5,6 +5,7 @@ from pymongo import DESCENDING, GEO2D
 import db
 from utils import timestamp, require_auth
 from base_handlers import BaseHandler
+from api.users.friends import status as friend_status
 
 class EventsHandler(BaseHandler):
     @require_auth
@@ -44,8 +45,9 @@ class EventsHandler(BaseHandler):
         Gets a list of events
         TODO - make the list relative to the user
         '''
-        #grab the sorting type from the args
+        #grab the sorting/filtering types from the args
         sort = self.get_argument('sort', None)
+        filter = self.get_argument('filter', None)
         
         #set up the base query
         if sort is None or sort == u'nearby':
@@ -58,11 +60,20 @@ class EventsHandler(BaseHandler):
         else:
             events = db.objects.event.find()
         
+        #perform filtering
+        if filter == 'friends':
+            #todo
+        #any other value for filter is a category
+        elif filter:
+            events = events.where({u'category', filter})
+        
         #perform the required sorting
         if sort == u'created':
             events = events.sort(u'created', direction=DESCENDING)
         elif sort == u'soon':
             events = events.sort(u'when', direction=DESCENDING)
+            
+        
             
         #output the results
         result = {u'events': [e[u'revision'] for e in events]}
