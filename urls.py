@@ -1,4 +1,4 @@
-from base_handlers import MainHandler
+from api.handlers import RootHandler
 from api.tokens.handlers import TokenHandler
 from api.notifications.handlers import RegistrationHandler
 from api.users.handlers import UserHandler, AvatarHandler
@@ -11,7 +11,7 @@ from api.categories.handlers import CategoriesHandler
 from api.extras.maps.handlers import MapsHandler
 
 handlers = [
-    (r"/", MainHandler),
+    (r"/", RootHandler),
     (r"/token/", TokenHandler),
     (r"/notifications/register/", RegistrationHandler),
     (r"/users/(?P<username>\w*)/", UserHandler),
