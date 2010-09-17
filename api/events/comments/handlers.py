@@ -32,7 +32,7 @@ class CommentsHandler(BaseHandler):
         
         #show them comments!
         comments = db.objects.comment.find(query).sort(u'timestamp', pymongo.ASCENDING)
-        self.output({u'comments': comments})
+        self.output({u'comments': [c for c in comments]})
     
     @require_auth
     def post(self, event_id):
