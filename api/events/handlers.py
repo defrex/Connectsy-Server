@@ -62,7 +62,9 @@ class EventsHandler(BaseHandler):
         
         #perform filtering
         if filter == 'friends':
-            #todo
+            #grab a list of unique events started by friends or with friends
+            #invited, that are either open or have the current user invited
+            events = db.objects.
         #any other value for filter is a category
         elif filter:
             events = events.where({u'category', filter})
@@ -115,6 +117,7 @@ class EventHandler(BaseHandler):
             response['attendants'] = db.objects.attendance.find({u'event': event[u'_id']})
         
         self.output(response)
+        
         
     
 
