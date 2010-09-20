@@ -12,14 +12,16 @@ class FriendsHandler(BaseHandler):
         status_type = status.ACCEPTED
         
         #allow users to get their pending friend requests
+        pending = False
         if username == self.get_session()[u'username'] and self.get_argument(u'pending', False):
             status_type = status.PENDING
+            pending = True
         
         list = []
         list += [friend[u'to'] for friend in db.objects.friend.find({u'from':
-                username, u'status': status_type})]
+                username, u'status': status.PENDING_TO if pending else status_type})]
         list += [friend[u'from'] for friend in db.objects.friend.find({u'to':
-                username, u'status': status_type})]
+                username, u'status': status.PENDING_FROM if pending else status_type})]
         self.output({u'friends': list})
         
     @require_auth

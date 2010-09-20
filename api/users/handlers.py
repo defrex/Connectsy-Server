@@ -46,10 +46,19 @@ class UserHandler(BaseHandler):
         
         #get friend status
         cur_user = self.get_session()[u'username']
-        friend_status = db.objects.friend.find_one({u'from': username, 'to': cur_user}) or \
-            db.objects.friend.find_one({u'to': username, 'from': cur_user})
-        friend_status = friend_status and friend_status[u'status']
-
+        friend_status = db.objects.friend.find_one({u'from': username, 'to': cur_user})
+        if friend_status:
+            friend_status = friend_status[u'status']
+            if friend_status == status.PENDING:
+                friend_status = status.PENDING_FROM
+        else:
+            friend_status = db.objects.friend.find_one({u'to': username, 'from': cur_user})
+            if friend_status:
+                friend_status = friend_status[u'status']
+                if friend_status == status.PENDING:
+                    friend_status = status.PENDING_TO
+                    
+        #default status
         if not friend_status:
             friend_status = status.NOT_FRIEND
        
