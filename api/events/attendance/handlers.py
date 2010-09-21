@@ -28,9 +28,8 @@ class AttendanceHandler(BaseHandler):
         
         #grab user and status from each attendance objects
         tmp = {}
-        for att in atts:
-            tmp['username'] = att[u'status']
-            
+        for att in atts: tmp[att[u'username']] = att[u'status']
+        
         result[u'attendants'] = [{'username': k, 'status': v} for k, v in tmp.iteritems()]
         
         self.write(result)
