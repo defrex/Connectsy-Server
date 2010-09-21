@@ -168,7 +168,8 @@ class CSEncoder(json.JSONEncoder):
         elif isinstance(o, uuid.UUID):
             return o.hex
         elif isinstance(o, Cursor):
-            return [self._walk(i) for i in o]
+            # the or is sort of a stylish hack
+            return [self._walk(i) or i for i in o]
         else:
             return json.JSONEncoder.default(self, o)
             
