@@ -27,9 +27,11 @@ class AttendanceHandler(BaseHandler):
         if until: atts = atts.where('timestamp > ' % until)
         
         #grab user and status from each attendance objects
+        tmp = {}
         for att in atts:
-            result[u'attendants'].append({'username': att[u'username'],
-                                          'status': att[u'status']})
+            tmp['username'] = att[u'status']
+            
+        result[u'attendants'] = [{'username': k, 'status': v} for k, v in tmp.iteritems()]
         
         self.write(result)
         
