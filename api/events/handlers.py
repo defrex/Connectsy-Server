@@ -63,22 +63,28 @@ class EventsHandler(BaseHandler):
         
         #set up the base query
         if sort is None or sort == u'nearby':
+            #make sure there's a default sort here
+            sort = sort or 'soon'
+        
             #grab lat/lng from the query, defaulting to toronto
             lat = float(self.get_argument('lat', '43.652527'))
             lng = float(self.get_argument('lng', '-79.381961'))
             where = [lat, lng]
-            events = db.objects.event.find({u'posted_from': {u'$near': where}}.update(filter))
-            sort = sort or 'soon'
+            q = {u'posted_from': {u'$near': where}}
+            
+            #add filter to the query
+            q.update(filter)
+            
+            #run the query
+            events = db.objects.event.find(q)
         else:
             events = db.objects.event.find(filter)
         
         #perform the required sorting
         if sort == u'created':
-            events = events.sort(u'created', direction=DESCENDING)
+            events.sort(u'created', direction=DESCENDING)
         elif sort == u'soon':
-            events = events.sort(u'when', direction=DESCENDING)
-            
-        
+            events.sort(u'when', direction=DESCENDING)
             
         #output the results
         result = {u'events': [e[u'revision'] for e in events]}
