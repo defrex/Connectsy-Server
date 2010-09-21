@@ -32,7 +32,6 @@ def friend(obj):
 def comment(obj):
     obj[u'id'] = obj[u'_id']
     del obj[u'_id']
-    del obj['nonce']
     del obj['event']
     return obj
     
