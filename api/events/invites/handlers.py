@@ -45,7 +45,7 @@ class InvitesHandler(BaseHandler):
             #build out the attendance objects from friends
             for friend in friends:
                 db.objects.attendance.insert({u'username': friend,
-                        u'event': event_id, u'timestamp', timestamp(),
+                        u'event': event_id, u'timestamp': timestamp(),
                         u'status': status.INVITED})
         else:
             #only create new attendances for people who weren't already there
