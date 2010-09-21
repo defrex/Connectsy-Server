@@ -14,7 +14,7 @@ class AttendanceHandler(BaseHandler):
         
         TODO - verify that the user is invited to this event
         '''
-        result = {u'attendants': {}, u'timestamp': timestamp()}
+        result = {u'attendants': [], u'timestamp': timestamp()}
         until = self.get_argument('until', default=None)
         #silly way of avoiding missed changes due to race conditions
         if until is not None:
@@ -28,7 +28,8 @@ class AttendanceHandler(BaseHandler):
         
         #grab user and status from each attendance objects
         for att in atts:
-            result[u'attendants'][att[u'username']] = att[u'status']
+            result[u'attendants'].append({'username': att[u'username'],
+                                          'status': att[u'status']})
         
         self.write(result)
         
