@@ -11,3 +11,4 @@ def import_client(name):
     
 # import clients here
 import_client('android_froyo')
+import_client('generic_poll')

@@ -75,6 +75,8 @@ friend
 notification_reg
     :string user
         Username for which the notifications are registered
+    :timestamp timestamp
+        Time of registration
     :string client_type
         Client type registered for notifications
     :string client_id
