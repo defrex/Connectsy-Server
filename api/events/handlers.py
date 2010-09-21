@@ -49,26 +49,28 @@ class EventsHandler(BaseHandler):
         sort = self.get_argument('sort', None)
         filter = self.get_argument('filter', None)
         
+        #prep filtering
+        if filter == 'friends':
+            #grab a list of unique events started by friends or with friends
+            #invited, that are either open or have the current user invited
+            #events = db.objects.
+            filter = {} #no filter for now
+        #any other value for filter is a category
+        elif filter:
+            filter = {u'category': filter}
+        else:
+            filter = {}
+        
         #set up the base query
         if sort is None or sort == u'nearby':
             #grab lat/lng from the query, defaulting to toronto
             lat = float(self.get_argument('lat', '43.652527'))
             lng = float(self.get_argument('lng', '-79.381961'))
             where = [lat, lng]
-            events = db.objects.event.find({u'posted_from': {u'$near': where}})
+            events = db.objects.event.find({u'posted_from': {u'$near': where}}.update(filter))
             sort = sort or 'soon'
         else:
-            events = db.objects.event.find()
-        
-        #perform filtering
-        if filter == 'friends':
-            #grab a list of unique events started by friends or with friends
-            #invited, that are either open or have the current user invited
-            #events = db.objects.
-            pass
-        #any other value for filter is a category
-        elif filter:
-            events = events.where({u'category': filter})
+            events = db.objects.event.find(filter)
         
         #perform the required sorting
         if sort == u'created':
