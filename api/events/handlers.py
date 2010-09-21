@@ -68,7 +68,7 @@ class EventsHandler(BaseHandler):
             pass
         #any other value for filter is a category
         elif filter:
-            events = events.where({u'category', filter})
+            events = events.where({u'category': filter})
         
         #perform the required sorting
         if sort == u'created':
