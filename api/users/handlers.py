@@ -1,3 +1,4 @@
+import re
 import os
 import uuid
 
@@ -7,6 +8,23 @@ import db
 from utils import json_encoder, hash, require_auth, timestamp
 from base_handlers import BaseHandler
 from friends import status
+from friends.friend_utils import friend_status
+
+class UsersHandler(BaseHandler):
+
+    @require_auth
+    def get(self):
+        current_user = self.get_session()[u'username']
+        q = self.get_argument(u'q', u'')
+        users = db.objects.user.find_all({u'username': re.compile(q)})
+        
+        #attach the friend status
+        results = []
+        for user in users:
+            username = user[u'username']
+            results.append({u'username': username,  u'friend_status': friend_status(current_user, username)})
+        
+        self.output({u'results': results})
 
 class UserHandler(BaseHandler):
     def put(self, username):
@@ -46,23 +64,7 @@ class UserHandler(BaseHandler):
         
         #get friend status
         cur_user = self.get_session()[u'username']
-        friend_status = db.objects.friend.find_one({u'from': username, 'to': cur_user})
-        if friend_status:
-            friend_status = friend_status[u'status']
-            if friend_status == status.PENDING:
-                friend_status = status.PENDING_FROM
-        else:
-            friend_status = db.objects.friend.find_one({u'to': username, 'from': cur_user})
-            if friend_status:
-                friend_status = friend_status[u'status']
-                if friend_status == status.PENDING:
-                    friend_status = status.PENDING_TO
-                    
-        #default status
-        if not friend_status:
-            friend_status = status.NOT_FRIEND
-       
-        u['friend_status'] = friend_status
+        u['friend_status'] = friend_status(cur_user, username)
         
         #write the user
         self.output(u)
