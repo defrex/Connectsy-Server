@@ -45,6 +45,7 @@ class GenericPollHandler(BaseHandler):
             'generic_poll_client', **modify_command)
             
         #output to the client
-        self.output({u'notifications': record.notifications})
+        notifications = record[u'notifications'] if u'notifications' in record else []
+        self.output({u'notifications': notifications})
             
         

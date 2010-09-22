@@ -16,7 +16,7 @@ class RegistrationHandler(BaseHandler):
             raise HTTPError(400)
             
         #ensure the client supported
-        if not client in notifiers:
+        if not body[u'client_type'] in notifiers:
             raise HTTPError(501)
             
         #remove any old db records with the same client id
