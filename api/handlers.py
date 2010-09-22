@@ -1,5 +1,6 @@
 import time
 
+import settings
 from base_handlers import BaseHandler
 
 start_time = time.time()

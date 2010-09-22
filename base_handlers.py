@@ -20,7 +20,9 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         self.set_status(status)
         self.set_header("Content-Type", "application/json; charset=UTF-8")
-        self.write(json_encoder(obj))
+        a = json_encoder(obj)
+        print a
+        self.write(a)
         self.finish()
         
     def created(self, obj=None):
