@@ -1,6 +1,8 @@
 import re
 import os
 import uuid
+from PIL import Image
+from StringIO import StringIO
 
 from tornado.web import HTTPError
 
@@ -16,7 +18,7 @@ class UsersHandler(BaseHandler):
     def get(self):
         current_user = self.get_session()[u'username']
         q = self.get_argument(u'q', u'')
-        users = db.objects.user.find_all({u'username': re.compile(q)})
+        users = db.objects.user.find({u'username': re.compile(q)})
         
         #attach the friend status
         results = []
@@ -115,11 +117,13 @@ class AvatarHandler(BaseHandler):
                 
         if not extension:
             raise HTTPError(415)
-            
-        file = open(os.path.join(avatar_dir, '%s.%s' % (username, extension)), 'w')
-        file.write(self.request.body)
-        file.close()
-        
+           
+        file = StringIO(self.request.body)
+        image = Image.open(file)
+        image.thumbnail((100, 100), "BICUBIC")
+        image.save(os.path.join(avatar_id, '%s.png' % (username)))
+        file.close() 
+
         self.finish()
         
     @require_auth
