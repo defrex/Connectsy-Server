@@ -120,8 +120,8 @@ class AvatarHandler(BaseHandler):
            
         file = StringIO(self.request.body)
         image = Image.open(file)
-        image.thumbnail((100, 100), "BICUBIC")
-        image.save(os.path.join(avatar_id, '%s.png' % (username)))
+        image.thumbnail((100, 100), Image.BICUBIC)
+        image.save(os.path.join(avatar_dir, '%s.png' % (username)))
         file.close() 
 
         self.finish()
