@@ -1,13 +1,17 @@
 import uuid
 from tornado.web import HTTPError
 from pymongo import DESCENDING, GEO2D
-from bson import Code
+#from bson import Code
+#temp
+class Code(object):
+    def __init__(*args, **kwargs):
+        pass
 
 import db
 from utils import timestamp, require_auth
 from base_handlers import BaseHandler
 from api.users.friends import status as friend_status
-from api.friends.friend_utils import get_friends
+from api.users.friends.friend_utils import get_friends
 
 class EventsHandler(BaseHandler):
     @require_auth

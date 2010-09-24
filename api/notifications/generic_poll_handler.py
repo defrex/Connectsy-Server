@@ -34,7 +34,7 @@ class GenericPollHandler(BaseHandler):
             # performed)
             u'update': {
                 # delete the notifications array member
-                u'$unset': u'notifications',
+                u'$unset': {u'notifications': 1},
             },
             # create the record if one doesn't yet exist
             u'upsert': True,
@@ -43,6 +43,10 @@ class GenericPollHandler(BaseHandler):
         #execute the command
         record = db.objects.get_database().command(u'findandmodify',
             'generic_poll_client', **modify_command)
+        if record:
+            record = record[u'value'] if u'value' in record else record
+        else:
+            record = {}
             
         #output to the client
         notifications = record[u'notifications'] if u'notifications' in record else []

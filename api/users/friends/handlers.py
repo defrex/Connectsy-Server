@@ -19,9 +19,9 @@ class FriendsHandler(BaseHandler):
         
         list = []
         list += [friend[u'to'] for friend in db.objects.friend.find({u'from':
-                username, u'status': status.PENDING_TO if pending else status_type})]
+                username, u'status': status.PENDING if pending else status_type})]
         list += [friend[u'from'] for friend in db.objects.friend.find({u'to':
-                username, u'status': status.PENDING_FROM if pending else status_type})]
+                username, u'status': status.PENDING if pending else status_type})]
         self.output({u'friends': list})
         
     @require_auth
@@ -30,16 +30,18 @@ class FriendsHandler(BaseHandler):
     
         #i know you're lonely, but you still can't friend yourself
         if username == client_user:
-            return
+            raise HTTPError(400)
             
         #make sure that this user actually exists
         if not db.objects.user.find_one({u'username': username}):
-            return HTTPError(404)
+            raise HTTPError(404)
+        
+        # TODO - make sure the users aren't already friends
         
         #check for dups
         if db.objects.friend.find_one({u'to': username,
                 u'from': client_user, u'status': status.PENDING}):
-            return HTTPError(409)
+            raise HTTPError(409)
         
         #if a friend requests from this person to the auth'd client exists,
         #then this POST is a confirmation

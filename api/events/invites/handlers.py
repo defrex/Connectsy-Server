@@ -56,7 +56,7 @@ class InvitesHandler(BaseHandler):
             
         for username in users:
             #send the invite notification
-            notifications.send(username, json_encoder({u'type': 'invite', u'event_revision': event[u'revision']}))
+            notifications.send(username, {u'type': 'invite', u'event_revision': event[u'revision']})
             #build out the new attendance object
             db.objects.attendance.insert({u'username': username,
                     u'event': event_id, u'timestamp': timestamp(),
