@@ -1,7 +1,11 @@
 import uuid
 from tornado.web import HTTPError
 from pymongo import DESCENDING, GEO2D
-from bson import Code
+#from bson import Code
+#temp
+class Code(object):
+    def __init__(*args, **kwargs):
+        pass
 
 import db
 from utils import timestamp, require_auth
