@@ -1,5 +1,7 @@
 from clients import notifiers
 
+import db
+
 def send(user, message):
     '''
     Sends a message to all of a user's registered listeners
