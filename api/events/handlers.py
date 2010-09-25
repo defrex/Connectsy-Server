@@ -129,9 +129,8 @@ class EventsHandler(BaseHandler):
 
             # Gets a Cursor to {event, user} objects containing all unique
             # events friends or the user are attending.  
-            event_list = [a for a in db.objects.attendance.map_reduce(
+            event_list = [a[u'value'] for a in db.objects.attendance.map_reduce(
                 map=map_func, reduce=reduce_func, query=query).find()]
-            print event_list
                 
             # POTENTIAL OPTIMIZATION BELOW: These can be split in a single
             #   loop rather than two separate map calls, which will loop
