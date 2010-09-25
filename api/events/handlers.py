@@ -137,7 +137,7 @@ class EventsHandler(BaseHandler):
                 
             # List of events the user is invited to
             events_user_invited = map(lambda a: a[u'event'],
-                filter(lambda a: a[u'user'] == username))
+                filter(lambda a: a[u'user'] == username, event_list))
             
             # List of events that the user's friends are invited to
             events_friends_invited = map(lambda a: a[u'event'],
