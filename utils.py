@@ -15,7 +15,7 @@ except: import json
 
 # Use this for all your json encoding needs.  It will automatically
 # handle sanitization, and plays nicely with cursors from the DB.
-from json_encoder import json_encoder #avoids a circular import
+from json_encoder import json_encoder #convoluted, but avoids a circular import
 
 # Timestamp generation
 import time

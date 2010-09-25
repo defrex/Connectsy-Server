@@ -86,6 +86,10 @@ class CSCollection(Collection):
     # Overridden methods for automatically handling winter migrations
     
     def find_one(self, *args, **kwargs):
+        #if it's a single argument and a string, convert it to an objectid
+        if len(args) == 1 and isinstance(args[0], basestring):
+            args = ({u'_id': ObjectId(args[0])},)
+    
         result = Collection.find_one(self, *args, **kwargs)
         if not result is None:
             return CSObject(getattr(winter.objects, self.name)(result), self.name)
@@ -95,7 +99,6 @@ class CSCollection(Collection):
         #if it's a single argument and a string, convert it to an objectid
         if len(args) == 1 and isinstance(args[0], basestring):
             args = ({u'_id': ObjectId(args[0])},)
-            
             
         result = Collection.find(self, *args, **kwargs)
         return CSCursor(result)
