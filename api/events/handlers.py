@@ -131,6 +131,7 @@ class EventsHandler(BaseHandler):
             # events friends or the user are attending.  
             event_list = [a for a in db.objects.attendance.map_reduce(
                 map=map_func, reduce=reduce_func, query=query).find()]
+            print event_list
                 
             # POTENTIAL OPTIMIZATION BELOW: These can be split in a single
             #   loop rather than two separate map calls, which will loop
@@ -142,7 +143,7 @@ class EventsHandler(BaseHandler):
             
             # List of events that the user's friends are invited to
             events_friends_invited = map(lambda a: a[u'event'],
-                filter(lambda a: a[u'user'] != username))
+                filter(lambda a: a[u'user'] != username, event_list))
             
             # Assemble the query.  Note the use of $or, which basically
             # gives us the union for free.
