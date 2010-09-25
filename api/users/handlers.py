@@ -12,12 +12,19 @@ from base_handlers import BaseHandler
 from friends import status
 from friends.friend_utils import friend_status
 
+username_sanitizer = re.compile(r"\W")
+
 class UsersHandler(BaseHandler):
 
     @require_auth
     def get(self):
         current_user = self.get_session()[u'username']
+        
+        #grab and sanitize the query
         q = self.get_argument(u'q', u'')
+        q = username_sanitizer.sub('', q)
+        
+        #query: *q*
         users = db.objects.user.find({u'username': re.compile(q)})
         
         #attach the friend status

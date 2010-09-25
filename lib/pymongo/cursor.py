@@ -14,9 +14,6 @@
 
 """Cursor class to iterate over Mongo query results."""
 
-import struct
-import warnings
-
 from pymongo import (helpers,
                      message)
 from pymongo.code import Code
@@ -28,44 +25,80 @@ _QUERY_OPTIONS = {
     "tailable_cursor": 2,
     "slave_okay": 4,
     "oplog_replay": 8,
-    "no_timeout": 16
-}
+    "no_timeout": 16}
 
 
+# TODO might be cool to be able to do find().include("foo") or
+# find().exclude(["bar", "baz"]) or find().slice("a", 1, 2) as an
+# alternative to the fields specifier.
 class Cursor(object):
     """A cursor / iterator over Mongo query results.
     """
 
-    def __init__(self, collection, spec, fields, skip, limit, slave_okay,
-                 timeout, tailable, snapshot=False,
-                 _sock=None, _must_use_master=False, _is_command=False):
+    def __init__(self, collection, spec=None, fields=None, skip=0, limit=0,
+                 timeout=True, snapshot=False, tailable=False, sort=None,
+                 max_scan=None, as_class=None,
+                 _must_use_master=False, _is_command=False,
+                 **kwargs):
         """Create a new cursor.
 
-        Should not be called directly by application developers.
+        Should not be called directly by application developers - see
+        :meth:`~pymongo.collection.Collection.find` instead.
 
         .. mongodoc:: cursors
         """
+        self.__id = None
+
+        if spec is None:
+            spec = {}
+
+        if not isinstance(spec, dict):
+            raise TypeError("spec must be an instance of dict")
+        if not isinstance(skip, int):
+            raise TypeError("skip must be an instance of int")
+        if not isinstance(limit, int):
+            raise TypeError("limit must be an instance of int")
+        if not isinstance(timeout, bool):
+            raise TypeError("timeout must be an instance of bool")
+        if not isinstance(snapshot, bool):
+            raise TypeError("snapshot must be an instance of bool")
+        if not isinstance(tailable, bool):
+            raise TypeError("tailable must be an instance of bool")
+
+        if fields is not None:
+            if not fields:
+                fields = {"_id": 1}
+            if not isinstance(fields, dict):
+                fields = helpers._fields_list_to_dict(fields)
+
+        if as_class is None:
+            as_class = collection.database.connection.document_class
+
         self.__collection = collection
         self.__spec = spec
         self.__fields = fields
         self.__skip = skip
         self.__limit = limit
-        self.__slave_okay = slave_okay
         self.__timeout = timeout
         self.__tailable = tailable
         self.__snapshot = snapshot
-        self.__ordering = None
+        self.__ordering = sort and helpers._index_document(sort) or None
+        self.__max_scan = max_scan
         self.__explain = False
         self.__hint = None
-        self.__socket = _sock
+        self.__as_class = as_class
+        self.__tz_aware = collection.database.connection.tz_aware
         self.__must_use_master = _must_use_master
         self.__is_command = _is_command
 
         self.__data = []
-        self.__id = None
         self.__connection_id = None
         self.__retrieved = 0
         self.__killed = False
+
+        # this is for passing network_timeout through if it's specified
+        # need to use kwargs as None is a legit value for network_timeout
+        self.__kwargs = kwargs
 
     @property
     def collection(self):
@@ -106,12 +139,11 @@ class Cursor(object):
         completely evaluated.
         """
         copy = Cursor(self.__collection, self.__spec, self.__fields,
-                      self.__skip, self.__limit, self.__slave_okay,
-                      self.__timeout, self.__tailable, self.__snapshot)
+                      self.__skip, self.__limit, self.__timeout,
+                      self.__tailable, self.__snapshot)
         copy.__ordering = self.__ordering
         copy.__explain = self.__explain
         copy.__hint = self.__hint
-        copy.__socket = self.__socket
         return copy
 
     def __die(self):
@@ -128,9 +160,9 @@ class Cursor(object):
     def __query_spec(self):
         """Get the spec to use for a query.
         """
-        if self.__is_command or "$query" in self.__spec:
-            return self.__spec
-        spec = SON({"$query": self.__spec})
+        spec = self.__spec
+        if not self.__is_command and "$query" not in self.__spec:
+            spec = SON({"$query": self.__spec})
         if self.__ordering:
             spec["$orderby"] = self.__ordering
         if self.__explain:
@@ -139,6 +171,8 @@ class Cursor(object):
             spec["$hint"] = self.__hint
         if self.__snapshot:
             spec["$snapshot"] = True
+        if self.__max_scan:
+            spec["$maxScan"] = self.__max_scan
         return spec
 
     def __query_options(self):
@@ -147,7 +181,7 @@ class Cursor(object):
         options = 0
         if self.__tailable:
             options |= _QUERY_OPTIONS["tailable_cursor"]
-        if self.__slave_okay:
+        if self.__collection.database.connection.slave_okay:
             options |= _QUERY_OPTIONS["slave_okay"]
         if not self.__timeout:
             options |= _QUERY_OPTIONS["no_timeout"]
@@ -163,8 +197,9 @@ class Cursor(object):
         """Limits the number of results to be returned by this cursor.
 
         Raises TypeError if limit is not an instance of int. Raises
-        InvalidOperation if this cursor has already been used. The last `limit`
-        applied to this cursor takes precedence.
+        InvalidOperation if this cursor has already been used. The
+        last `limit` applied to this cursor takes precedence. A limit
+        of ``0`` is equivalent to no limit.
 
         :Parameters:
           - `limit`: the number of results to return
@@ -232,13 +267,15 @@ class Cursor(object):
             skip = 0
             if index.start is not None:
                 if index.start < 0:
-                    raise IndexError("Cursor instances do not support negative indices")
+                    raise IndexError("Cursor instances do not support"
+                                     "negative indices")
                 skip = index.start
 
             if index.stop is not None:
                 limit = index.stop - skip
                 if limit <= 0:
-                    raise IndexError("stop index must be greater than start index for slice %r" % index)
+                    raise IndexError("stop index must be greater than start"
+                                     "index for slice %r" % index)
             else:
                 limit = 0
 
@@ -248,14 +285,34 @@ class Cursor(object):
 
         if isinstance(index, (int, long)):
             if index < 0:
-                raise IndexError("Cursor instances do not support negative indices")
+                raise IndexError("Cursor instances do not support negative"
+                                 "indices")
             clone = self.clone()
             clone.skip(index + self.__skip)
-            clone.limit(-1) # use a hard limit
+            clone.limit(-1)  # use a hard limit
             for doc in clone:
                 return doc
             raise IndexError("no such item for Cursor instance")
-        raise TypeError("index %r cannot be applied to Cursor instances" % index)
+        raise TypeError("index %r cannot be applied to Cursor "
+                        "instances" % index)
+
+    def max_scan(self, max_scan):
+        """Limit the number of documents to scan when performing the query.
+
+        Raises :class:`~pymongo.errors.InvalidOperation` if this
+        cursor has already been used. Only the last :meth:`max_scan`
+        applied to this cursor has any effect.
+
+        :Parameters:
+          - `max_scan`: the maximum number of documents to scan
+
+        .. note:: Requires server version **>= 1.5.1**
+
+        .. versionadded:: 1.7
+        """
+        self.__check_okay_to_chain()
+        self.__max_scan = max_scan
+        return self
 
     def sort(self, key_or_list, direction=None):
         """Sorts this cursor's results.
@@ -416,10 +473,10 @@ class Cursor(object):
         """Send a query or getmore message and handles the response.
         """
         db = self.__collection.database
-        kwargs = {"_sock": self.__socket,
-                  "_must_use_master": self.__must_use_master}
+        kwargs = {"_must_use_master": self.__must_use_master}
         if self.__connection_id is not None:
             kwargs["_connection_to_use"] = self.__connection_id
+        kwargs.update(self.__kwargs)
 
         response = db.connection._send_message_with_response(message,
                                                              **kwargs)
@@ -432,9 +489,11 @@ class Cursor(object):
         self.__connection_id = connection_id
 
         try:
-            response = helpers._unpack_response(response, self.__id)
+            response = helpers._unpack_response(response, self.__id,
+                                                self.__as_class,
+                                                self.__tz_aware)
         except AutoReconnect:
-            db.connection._reset()
+            db.connection.disconnect()
             raise
         self.__id = response["cursor_id"]
 

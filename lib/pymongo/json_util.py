@@ -34,6 +34,16 @@ Currently this does not handle special encoding and decoding for
 :class:`~pymongo.binary.Binary` and :class:`~pymongo.code.Code`
 instances.
 
+.. versionchanged:: 1.8
+   Handle timezone aware datetime instances on encode, decode to
+   timezone aware datetime instances.
+
+.. versionchanged:: 1.8
+   Added support for encoding/decoding
+   :class:`~pymongo.max_key.MaxKey` and
+   :class:`~pymongo.min_key.MinKey`, and for encoding
+   :class:`~pymongo.timestamp.Timestamp`.
+
 .. versionchanged:: 1.2
    Added support for encoding/decoding datetimes and regular expressions.
 """
@@ -43,7 +53,11 @@ import datetime
 import re
 
 from pymongo.dbref import DBRef
+from pymongo.max_key import MaxKey
+from pymongo.min_key import MinKey
 from pymongo.objectid import ObjectId
+from pymongo.timestamp import Timestamp
+from pymongo.tz_util import utc
 
 # TODO support Binary and Code
 # Binary and Code are tricky because they subclass str so json thinks it can
@@ -55,13 +69,15 @@ from pymongo.objectid import ObjectId
 # TODO share this with bson.py?
 _RE_TYPE = type(re.compile("foo"))
 
+
 def object_hook(dct):
     if "$oid" in dct:
         return ObjectId(str(dct["$oid"]))
     if "$ref" in dct:
         return DBRef(dct["$ref"], dct["$id"], dct.get("$db", None))
     if "$date" in dct:
-        return datetime.datetime.utcfromtimestamp(float(dct["$date"]) / 1000.0)
+        return datetime.datetime.fromtimestamp(float(dct["$date"]) / 1000.0,
+                                               utc)
     if "$regex" in dct:
         flags = 0
         if "i" in dct["$options"]:
@@ -69,7 +85,12 @@ def object_hook(dct):
         if "m" in dct["$options"]:
             flags |= re.MULTILINE
         return re.compile(dct["$regex"], flags)
+    if "$minKey" in dct:
+        return MinKey()
+    if "$maxKey" in dct:
+        return MaxKey()
     return dct
+
 
 def default(obj):
     if isinstance(obj, ObjectId):
@@ -78,6 +99,8 @@ def default(obj):
         return obj.as_doc()
     if isinstance(obj, datetime.datetime):
         # TODO share this code w/ bson.py?
+        if obj.utcoffset() is not None:
+            obj = obj - obj.utcoffset()
         millis = int(calendar.timegm(obj.timetuple()) * 1000 +
                      obj.microsecond / 1000)
         return {"$date": millis}
@@ -89,4 +112,10 @@ def default(obj):
             flags += "m"
         return {"$regex": obj.pattern,
                 "$options": flags}
+    if isinstance(obj, MinKey):
+        return {"$minKey": 1}
+    if isinstance(obj, MaxKey):
+        return {"$maxKey": 1}
+    if isinstance(obj, Timestamp):
+        return {"t": obj.time, "i": obj.inc}
     raise TypeError("%r is not JSON serializable" % obj)

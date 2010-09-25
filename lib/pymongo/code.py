@@ -15,6 +15,7 @@
 """Tools for representing JavaScript code to be evaluated by MongoDB.
 """
 
+
 class Code(str):
     """JavaScript code to be evaluated by MongoDB.
 
@@ -58,3 +59,6 @@ class Code(str):
         if isinstance(other, Code):
             return (self.__scope, str(self)) == (other.__scope, str(other))
         return False
+
+    def __ne__(self, other):
+        return not self == other
