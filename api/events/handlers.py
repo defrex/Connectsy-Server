@@ -102,7 +102,7 @@ class EventsHandler(BaseHandler):
             # Javascript map function - takes just the event_id and username
             # from the already-filtered collection
             map_func = Code("""function() {
-                  emit(this.event, {event: this.event, user: this.username);
+                  emit(this.event, {event: this.event, user: this.username});
             }""")
 
             # Javascript reduce function.  Returns {event_id, username}, where
@@ -111,7 +111,7 @@ class EventsHandler(BaseHandler):
             # that ONLY have the user attending, and not any of his friends.
             san_username = username_sanitizer.sub('', username)
             reduce_func = Code("""function(key, values) {
-                var username = values[0]
+                var username = values[0];
             
                 //check to see if the user is in the list of values
                 for (var i=0; i<values.length; i++)
