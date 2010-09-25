@@ -4,6 +4,7 @@ except: import json
 
 import uuid
 
+import pymongo
 from pymongo import Connection
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
@@ -13,6 +14,10 @@ import winter
 import settings
 import migrations #triggers winter migration setup
 import sanitizers
+
+# Constants FTW
+ASCENDING = pymongo.ASCENDING
+DESCENDING = pymongo.DESCENDING
 
 class CSObject(dict):
     # We can't do our crazy monkey patching here, because
