@@ -146,7 +146,7 @@ class EventsHandler(BaseHandler):
             
             # Assemble the query.  Note the use of $or, which basically
             # gives us the union for free.
-            events = db.objects.event.find({ u'$or': [
+            q_filter = { u'$or': [
                 # Events user is invited to
                 {u'_id': {u'$in': events_user_invited}},
                 # Broadcast events the user's friends are invited to
@@ -155,8 +155,7 @@ class EventsHandler(BaseHandler):
                 {u'broadcast': True, u'_id': {u'$in': events_friends_created}},
                 # Add a geospatial index to get a location sort
                 ], u'posted_from': {u'$near': where}
-            # Limit to 20 events
-            }, limit=20)
+            }
             
             # Override the sorting option so it doesn't overwrite the query
             q_sort = u'NO SORT FOR YOU'
@@ -187,12 +186,12 @@ class EventsHandler(BaseHandler):
             q = {u'posted_from': {u'$near': where}}
 
             #add filter to the query
-            q.update(filter)
+            q.update(q_filter)
 
             #run the query
             events = db.objects.event.find(q)
         else:
-            events = db.objects.event.find(filter)
+            events = db.objects.event.find(q_filter, limit=30)
 
         #perform the required sorting
         if q_sort == u'created':
