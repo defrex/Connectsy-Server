@@ -51,7 +51,6 @@ class EventsHandler(BaseHandler):
     def get(self):
         '''
         Gets a list of events
-        TODO - make the list relative to the user
         '''
         #store username for later use
         username = self.get_session()[u'username']
