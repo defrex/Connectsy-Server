@@ -56,11 +56,12 @@ class EventsHandler(BaseHandler):
         username = self.get_session()[u'username']
 
         #grab the sorting/filtering types from the args
-        sort = self.get_argument('sort', None)
-        filter = self.get_argument('filter', None)
+        #funky names avoid conflict with python builtins
+        q_sort = self.get_argument('sort', None)
+        q_filter = self.get_argument('filter', None)
 
         #prep filtering
-        if filter == 'friends':
+        if q_filter == 'friends':
         
             #prep the geospatial info
             lat = float(self.get_argument('lat', '43.652527'))
@@ -158,7 +159,7 @@ class EventsHandler(BaseHandler):
             }, limit=20)
             
             # Override the sorting option so it doesn't overwrite the query
-            sort = u'NO SORT FOR YOU'
+            q_sort = u'NO SORT FOR YOU'
             
             ### FINAL RESULTS:
             # Union of the following events:
@@ -169,15 +170,15 @@ class EventsHandler(BaseHandler):
             # Sorted by distance
 
         #any other value for filter is a category
-        elif filter:
-            filter = {u'category': filter}
+        elif q_filter:
+            q_filter = {u'category': q_filter}
         else:
-            filter = {}
+            q_filter = {}
 
         #set up the base query
-        if sort is None or sort == u'nearby':
+        if q_sort is None or q_sort == u'nearby':
             #make sure there's a default sort here
-            sort = sort or u'soon'
+            q_sort = q_sort or u'soon'
 
             #grab lat/lng from the query, defaulting to toronto
             lat = float(self.get_argument('lat', '43.652527'))
@@ -194,9 +195,9 @@ class EventsHandler(BaseHandler):
             events = db.objects.event.find(filter)
 
         #perform the required sorting
-        if sort == u'created':
+        if q_sort == u'created':
             events.sort(u'created', direction=DESCENDING)
-        elif sort == u'soon':
+        elif q_sort == u'soon':
             events.sort(u'when', direction=DESCENDING)
 
         #output the results
