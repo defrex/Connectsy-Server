@@ -18,8 +18,10 @@ class FriendsHandler(BaseHandler):
             pending = True
         
         list = []
-        list += [friend[u'to'] for friend in db.objects.friend.find({u'from':
-                username, u'status': status.PENDING if pending else status_type})]
+        #if we're doing only pending requests, just show incoming pends
+        if pending is False:
+            list += [friend[u'to'] for friend in db.objects.friend.find({u'from':
+                    username, u'status': status.PENDING if pending else status_type})]
         list += [friend[u'from'] for friend in db.objects.friend.find({u'to':
                 username, u'status': status.PENDING if pending else status_type})]
         self.output({u'friends': list})
