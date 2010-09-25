@@ -13,14 +13,15 @@
 # limitations under the License.
 
 """Tools for working with MongoDB `ObjectIds
-<http://www.mongodb.org/display/DOCS/Object+IDs>`_.
+<http://dochub.mongodb.org/core/objectids>`_.
 """
 
+import calendar
 import datetime
 try:
     import hashlib
     _md5func = hashlib.md5
-except ImportError: # for Python < 2.5
+except ImportError:  # for Python < 2.5
     import md5
     _md5func = md5.new
 import os
@@ -28,9 +29,9 @@ import socket
 import struct
 import threading
 import time
-import warnings
 
 from pymongo.errors import InvalidId
+from pymongo.tz_util import utc
 
 
 def _machine_bytes():
@@ -51,23 +52,21 @@ class ObjectId(object):
     _machine_bytes = _machine_bytes()
 
     def __init__(self, oid=None):
-        """Initialize a new ObjectId_.
+        """Initialize a new ObjectId.
 
-        If `oid` is ``None``, create a new (unique)
-        ObjectId_. If `oid` is an instance of (``basestring``,
-        :class:`ObjectId`) validate it and use that.  Otherwise, a
-        :class:`TypeError` is raised. If `oid` is invalid,
+        If `oid` is ``None``, create a new (unique) ObjectId. If `oid`
+        is an instance of (``basestring``, :class:`ObjectId`) validate
+        it and use that.  Otherwise, a :class:`TypeError` is
+        raised. If `oid` is invalid,
         :class:`~pymongo.errors.InvalidId` is raised.
 
         :Parameters:
-          - `oid` (optional): a valid ObjectId_ (12 byte binary or 24 character
+          - `oid` (optional): a valid ObjectId (12 byte binary or 24 character
             hex string)
 
         .. versionadded:: 1.2.1
-           The `oid` parameter can be a ``unicode`` instance (that contains only
-           hexadecimal digits).
-
-        .. _ObjectId: http://www.mongodb.org/display/DOCS/Object+IDs
+           The `oid` parameter can be a ``unicode`` instance (that contains
+           only hexadecimal digits).
 
         .. mongodoc:: objectids
         """
@@ -75,6 +74,46 @@ class ObjectId(object):
             self.__generate()
         else:
             self.__validate(oid)
+
+    @classmethod
+    def from_datetime(cls, generation_time):
+        """Create a dummy ObjectId instance with a specific generation time.
+
+        This method is useful for doing range queries on a field
+        containing :class:`ObjectId` instances.
+
+        .. warning::
+           It is not safe to insert a document containing an ObjectId
+           generated using this method. This method deliberately
+           eliminates the uniqueness guarantee that ObjectIds
+           generally provide. ObjectIds generated with this method
+           should be used exclusively in queries.
+
+        `generation_time` will be converted to UTC. Naive datetime
+        instances will be treated as though they already contain UTC.
+
+        An example using this helper to get documents where ``"_id"``
+        was generated before January 1, 2010 would be:
+
+        >>> gen_time = datetime.datetime(2010, 1, 1)
+        >>> dummy_id = ObjectId.from_datetime(gen_time)
+        >>> result = collection.find({"_id": {"$lt": dummy_id}})
+
+        :Parameters:
+          - `generation_time`: :class:`~datetime.datetime` to be used
+            as the generation time for the resulting ObjectId.
+
+        .. versionchanged:: 1.8
+           Properly handle timezone aware values for
+           `generation_time`.
+
+        .. versionadded:: 1.6
+        """
+        if generation_time.utcoffset() is not None:
+            generation_time = generation_time - generation_time.utcoffset()
+        ts = calendar.timegm(generation_time.timetuple())
+        oid = struct.pack(">i", int(ts)) + "\x00" * 8
+        return cls(oid)
 
     def __generate(self):
         """Generate a new value for this ObjectId.
@@ -134,13 +173,17 @@ class ObjectId(object):
         """A :class:`datetime.datetime` instance representing the time of
         generation for this :class:`ObjectId`.
 
-        The :class:`datetime.datetime` is always naive and represents the
-        generation time in UTC. It is precise to the second.
+        The :class:`datetime.datetime` is timezone aware, and
+        represents the generation time in UTC. It is precise to the
+        second.
+
+        .. versionchanged:: 1.8
+           Now return an aware datetime instead of a naive one.
 
         .. versionadded:: 1.2
         """
         t = struct.unpack(">i", self.__id[0:4])[0]
-        return datetime.datetime.utcfromtimestamp(t)
+        return datetime.datetime.fromtimestamp(t, utc)
 
     def __str__(self):
         return self.__id.encode("hex")
@@ -159,5 +202,3 @@ class ObjectId(object):
         .. versionadded:: 1.1
         """
         return hash(self.__id)
-
-

@@ -14,6 +14,7 @@
 
 """Exceptions raised by PyMongo."""
 
+
 class PyMongoError(Exception):
     """Base class for all PyMongo exceptions.
 
@@ -45,6 +46,20 @@ class ConfigurationError(PyMongoError):
 
 class OperationFailure(PyMongoError):
     """Raised when a database operation fails.
+
+    .. versionadded:: 1.8
+       The :attr:`code` attribute.
+    """
+
+    def __init__(self, error, code=None):
+        self.code = code
+        PyMongoError.__init__(self, error)
+
+
+class TimeoutError(OperationFailure):
+    """Raised when a database operation times out.
+
+    .. versionadded:: 1.8
     """
 
 
@@ -92,7 +107,7 @@ class InvalidId(PyMongoError):
     """
 
 
-class InvalidURI(PyMongoError):
+class InvalidURI(ConfigurationError):
     """Raised when trying to parse an invalid mongodb URI.
 
     .. versionadded:: 1.5

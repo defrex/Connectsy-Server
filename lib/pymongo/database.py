@@ -24,8 +24,7 @@ from pymongo.errors import (CollectionInvalid,
                             InvalidName,
                             OperationFailure)
 from pymongo.son import SON
-from pymongo.son_manipulator import (ObjectIdInjector,
-                                     ObjectIdShuffler)
+from pymongo.son_manipulator import ObjectIdInjector
 
 
 def _check_name(name):
@@ -66,9 +65,6 @@ class Database(object):
 
         self.__name = unicode(name)
         self.__connection = connection
-        # TODO remove the callable_value wrappers after deprecation is complete
-        self.__name_w = helpers.callable_value(self.__name, "Database.name")
-        self.__connection_w = helpers.callable_value(self.__connection, "Database.connection")
 
         self.__incoming_manipulators = []
         self.__incoming_copying_manipulators = []
@@ -86,8 +82,8 @@ class Database(object):
           - `manipulator`: the manipulator to add
         """
         def method_overwritten(instance, method):
-            return getattr(instance, method) != getattr(super(instance.__class__, instance), method)
-
+            return getattr(instance, method) != \
+                getattr(super(instance.__class__, instance), method)
 
         if manipulator.will_copy():
             if method_overwritten(manipulator, "transform_incoming"):
@@ -116,20 +112,18 @@ class Database(object):
         :class:`Database`.
 
         .. versionchanged:: 1.3
-           ``connection`` is now a property rather than a method. The
-           ``connection()`` method is deprecated.
+           ``connection`` is now a property rather than a method.
         """
-        return self.__connection_w
+        return self.__connection
 
     @property
     def name(self):
         """The name of this :class:`Database`.
 
         .. versionchanged:: 1.3
-           ``name`` is now a property rather than a method. The
-           ``name()`` method is deprecated.
+           ``name`` is now a property rather than a method.
         """
-        return self.__name_w
+        return self.__name
 
     def __cmp__(self, other):
         if isinstance(other, Database):
@@ -227,14 +221,8 @@ class Database(object):
             son = manipulator.transform_outgoing(son, collection)
         return son
 
-    def _command(self, command, allowable_errors=[], check=True, sock=None):
-        warnings.warn("The '_command' method is deprecated. "
-                      "Please use 'command' instead.", DeprecationWarning)
-        return self.command(command, check=check,
-                            allowable_errors=allowable_errors, _sock=sock)
-
     def command(self, command, value=1,
-                check=True, allowable_errors=[], _sock=None, **kwargs):
+                check=True, allowable_errors=[], **kwargs):
         """Issue a MongoDB command.
 
         Send command `command` to the database and return the
@@ -280,7 +268,7 @@ class Database(object):
           - `**kwargs` (optional): additional keyword arguments will
             be added to the command document before it is sent
 
-        .. versionchanged:: 1.5.2+
+        .. versionchanged:: 1.6
            Added the `value` argument for string commands, and keyword
            arguments for additional command options.
         .. versionchanged:: 1.5
@@ -295,11 +283,11 @@ class Database(object):
 
         command.update(kwargs)
 
-        result = self["$cmd"].find_one(command, _sock=_sock,
+        result = self["$cmd"].find_one(command,
                                        _must_use_master=True,
                                        _is_command=True)
 
-        if check and result["ok"] != 1:
+        if check and not result["ok"]:
             if result["errmsg"] in allowable_errors:
                 return result
             raise OperationFailure("command %r failed: %s" %
@@ -333,10 +321,7 @@ class Database(object):
 
         self.__connection._purge_index(self.__name, name)
 
-        if name not in self.collection_names():
-            return
-
-        self.command("drop", unicode(name))
+        self.command("drop", unicode(name), allowable_errors=["ns not found"])
 
     def validate_collection(self, name_or_collection):
         """Validate a collection.
@@ -406,7 +391,7 @@ class Database(object):
         if error.get("err", 0) is None:
             return None
         if error["err"] == "not master":
-            self.__connection._reset()
+            self.__connection.disconnect()
         return error
 
     def last_status(self):
@@ -455,9 +440,10 @@ class Database(object):
 
         .. versionadded:: 1.4
         """
+        pwd = helpers._password_digest(name, password)
         self.system.users.update({"user": name},
                                  {"user": name,
-                                  "pwd": helpers._password_digest(name, password)},
+                                  "pwd": pwd},
                                  upsert=True, safe=True)
 
     def remove_user(self, name):
@@ -524,7 +510,8 @@ class Database(object):
         nonce = self.command("getnonce")["nonce"]
         key = helpers._auth_key(nonce, name, password)
         try:
-            self.command("authenticate", user=unicode(name), nonce=nonce, key=key)
+            self.command("authenticate", user=unicode(name),
+                         nonce=nonce, key=key)
             return True
         except OperationFailure:
             return False
@@ -540,9 +527,9 @@ class Database(object):
         """Dereference a DBRef, getting the SON object it points to.
 
         Raises TypeError if `dbref` is not an instance of DBRef. Returns a SON
-        object or None if the reference does not point to a valid object. Raises
-        ValueError if `dbref` has a database specified that is different from
-        the current database.
+        object or None if the reference does not point to a valid object.
+        Raises ValueError if `dbref` has a database specified that is different
+        from the current database.
 
         :Parameters:
           - `dbref`: the reference
@@ -583,7 +570,7 @@ class Database(object):
         """This is only here so that some API misusages are easier to debug.
         """
         raise TypeError("'Database' object is not callable. If you meant to "
-                        "call the '%s' method on a 'Collection' object it is "
+                        "call the '%s' method on a 'Connection' object it is "
                         "failing because no such method exists." % self.__name)
 
 
@@ -599,7 +586,7 @@ class SystemJS(object):
         manual instantiation of this class should not be necessary.
 
         :class:`SystemJS` instances allow for easy manipulation and
-        access to `server-side JavaScript`_:
+        access to server-side JavaScript:
 
         .. doctest::
 
@@ -615,8 +602,6 @@ class SystemJS(object):
         .. note:: Requires server version **>= 1.1.1**
 
         .. versionadded:: 1.5
-
-        .. _server-side JavaScript: http://www.mongodb.org/display/DOCS/Server-side+Code+Execution#Server-sideCodeExecution-Storingfunctionsserverside
         """
         # can't just assign it since we've overridden __setattr__
         object.__setattr__(self, "_database", database)

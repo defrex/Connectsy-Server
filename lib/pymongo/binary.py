@@ -15,18 +15,28 @@
 """Tools for representing binary data to be stored in MongoDB.
 """
 
+BINARY_SUBTYPE = 0
+"""BSON binary subtype for binary data.
+
+This is becomming the default subtype and should be the most commonly
+used.
+
+.. versionadded:: 1.5
+"""
+
 FUNCTION_SUBTYPE = 1
 """BSON binary subtype for functions.
 
 .. versionadded:: 1.5
 """
 
-BINARY_SUBTYPE = 2
-"""BSON binary subtype for binary data.
+OLD_BINARY_SUBTYPE = 2
+"""Old BSON binary subtype for binary data.
 
-This is the default subtype and is the most commonly used.
+This is still the default subtype, but that is changing to
+:data:`BINARY_SUBTYPE`.
 
-.. versionadded:: 1.5
+.. versionadded:: 1.7
 """
 
 UUID_SUBTYPE = 3
@@ -50,6 +60,7 @@ USER_DEFINED_SUBTYPE = 128
 .. versionadded:: 1.5
 """
 
+
 class Binary(str):
     """Representation of binary data to be stored in or retrieved from MongoDB.
 
@@ -69,7 +80,7 @@ class Binary(str):
         to use
     """
 
-    def __new__(cls, data, subtype=2):
+    def __new__(cls, data, subtype=OLD_BINARY_SUBTYPE):
         if not isinstance(data, str):
             raise TypeError("data must be an instance of str")
         if not isinstance(subtype, int):
@@ -93,6 +104,9 @@ class Binary(str):
         # Binary("foo") == "foo" would return True, since Binary is a
         # subclass of str...
         return False
+
+    def __ne__(self, other):
+        return not self == other
 
     def __repr__(self):
         return "Binary(%s, %s)" % (str.__repr__(self), self.__subtype)
