@@ -92,8 +92,7 @@ class AvatarHandler(BaseHandler):
             abspath = os.path.join(avatar_dir, self.find_file(username))
             self.redirect('/static/avatars/%s' % self.find_file(username))
         except AttributeError:
-            print 'no avatar for: %s' % username
-            self.redirect('/static/avatars/default.png')
+            raise HTTPError(404)
     
     @require_auth
     def put(self, username):
