@@ -109,6 +109,7 @@ class EventsHandler(BaseHandler):
             # username is a random user, or the current user if they were
             # invited to that event.  Note that this WILL include events
             # that ONLY have the user attending, and not any of his friends.
+            san_username = username_sanitizer.sub('', username)
             reduce_func = Code("""function(key, values) {
                 var username = values[0]
             
@@ -123,7 +124,7 @@ class EventsHandler(BaseHandler):
                 }
                 
                 return {event: key, user: username};
-            }""" % username_sanitizer.sub('', username))
+            }""" % (san_username, san_username)) #yeah, this is lazy...
 
             # Gets a Cursor to {event, user} objects containing all unique
             # events friends or the user are attending.  
