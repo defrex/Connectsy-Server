@@ -1,7 +1,7 @@
 import re
 import uuid
 from tornado.web import HTTPError
-from pymongo import DESCENDING, GEO2D
+from pymongo import DESCENDING, GEO2D, ObjectId
 from pymongo.bson import Code
 
 import db
@@ -131,17 +131,17 @@ class EventsHandler(BaseHandler):
             # events friends or the user are attending.  
             event_list = [a[u'value'] for a in db.objects.attendance.map_reduce(
                 map=map_func, reduce=reduce_func, query=query).find()]
-                
+             
             # POTENTIAL OPTIMIZATION BELOW: These can be split in a single
             #   loop rather than two separate map calls, which will loop
             #   the whole list twice.
                 
             # List of events the user is invited to
-            events_user_invited = map(lambda a: a[u'event'],
+            events_user_invited = map(lambda a: ObjectId(a[u'event']),
                 filter(lambda a: a[u'user'] == username, event_list))
             
             # List of events that the user's friends are invited to
-            events_friends_invited = map(lambda a: a[u'event'],
+            events_friends_invited = map(lambda a: ObjectId(a[u'event']),
                 filter(lambda a: a[u'user'] != username, event_list))
             
             # Assemble the query.  Note the use of $or, which basically
