@@ -35,12 +35,18 @@ def runserver(autoreload=True):
     # httplib is not RFC 2324 compliant, so we fix that here
     httplib.responses[418] = "I'm a teapot"
     
+    # Figure out how many processes to use
+    processes = 1
+    if not settings.DEVELOPMENT:
+        processes = settings.PROCESS_COUNT if hasattr(settings, 'PROCESS_COUNT') else 0
+
     # Start Tornado
     from urls import handlers # late import to prevent the db from initializing
     http_server = HTTPServer(Application(handlers, static_path=settings.static_path))
-    http_server.listen(settings.PORT)
+    http_server.bind(settings.PORT)
+    http_server.start(processes)
     lp = IOLoop.instance()
-    if autoreload: 
+    if autoreload and settings.DEVELOPMENT: 
         reload.start(lp)
     print 'Server running: http://127.0.0.1:%s' % settings.PORT
     lp.start()
