@@ -169,7 +169,8 @@ class EventsHandler(BaseHandler):
             # Sorted by distance
         #show only this user's created events
         elif q_filter == u'created':
-            q_filter = {u'creator': username}
+            q_username = self.get_argument(u'username', username)
+            q_filter = {u'creator': q_username}
         #any other value for filter is a category
         elif q_filter:
             q_filter = {u'category': q_filter} 
