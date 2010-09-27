@@ -167,10 +167,12 @@ class EventsHandler(BaseHandler):
             #   All broadcast events started by the user's friends
             #
             # Sorted by distance
-
+        #show only this user's created events
+        elif q_filter == u'created':
+            q_filter = {u'creator': username}
         #any other value for filter is a category
         elif q_filter:
-            q_filter = {u'category': q_filter}
+            q_filter = {u'category': q_filter} 
         else:
             q_filter = {}
 
