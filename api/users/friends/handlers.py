@@ -43,7 +43,7 @@ class FriendsHandler(BaseHandler):
         
         #check for dups
         if db.objects.friend.find_one({u'to': username,
-                u'from': client_user, u'status': status.PENDING}):
+                u'from': client_user}):
             raise HTTPError(409)
         
         #if a friend requests from this person to the auth'd client exists,
