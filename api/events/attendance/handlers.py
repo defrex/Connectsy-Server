@@ -48,7 +48,7 @@ class AttendanceHandler(BaseHandler):
             raise HTTPError(404)
             
         #try to grab the user's existing attendance status
-        att = db.objects.attendance.find_one({u'event': event['_id'],
+        att = db.objects.attendance.find_one({u'event': str(event['_id']),
                 u'username': username})
                 
         #if the user isn't invited, we need to error out if broadcast is off
