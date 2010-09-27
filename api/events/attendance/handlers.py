@@ -68,8 +68,8 @@ class AttendanceHandler(BaseHandler):
         #update or create the attendance status
         att[u'timestamp'] = timestamp()
         att[u'status']    = body[u'status']
-        db.objects.attendance.insert(att)
-        
+        db.objects.attendance.save(att)
+
         # Hooray!
         self.finish()
     
