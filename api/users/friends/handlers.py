@@ -2,6 +2,7 @@ from tornado.web import HTTPError
 
 import db
 import status
+import notifications
 from utils import json_encoder, hash, require_auth, timestamp
 from base_handlers import BaseHandler
 
@@ -54,8 +55,12 @@ class FriendsHandler(BaseHandler):
                     {u'status': status.ACCEPTED}})
         #otherwise, create a pending friendship
         else:
+            #save the friend request in the db
             friend = {u'from': client_user, u'to': username, u'status': status.PENDING}
             db.objects.friend.save(friend)
+
+            #send the friend notification
+            notifications.send(username, {u'type': u'friend', u'username': client_user})
         
 class FriendHandler(BaseHandler):
         
