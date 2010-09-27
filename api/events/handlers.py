@@ -112,12 +112,12 @@ class EventsHandler(BaseHandler):
             # that ONLY have the user attending, and not any of his friends.
             san_username = username_sanitizer.sub('', username)
             reduce_func = Code("""function(key, values) {
-                var username = values[0];
+                var username = values[0].user;
             
                 //check to see if the user is in the list of values
                 for (var i=0; i<values.length; i++)
                 {
-                    if (values[i] == "%s")
+                    if (values[i].user == "%s")
                     {
                         username = "%s";
                         break;
