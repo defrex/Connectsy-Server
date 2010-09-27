@@ -1,7 +1,8 @@
 import re
 import uuid
 from tornado.web import HTTPError
-from pymongo import DESCENDING, GEO2D, ObjectId
+from pymongo import DESCENDING, GEO2D
+from pymongo.objectid import ObjectId
 from pymongo.bson import Code
 
 import db
