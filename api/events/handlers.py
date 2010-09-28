@@ -175,14 +175,17 @@ class EventsHandler(BaseHandler):
             
         # All other query types share a common base query
         else:
-            custom = {}
-        
             #show only this user's created events
             if q_filter == u'creator':
                 q_filter = {u'creator': self.get_argument(u'username', username)}
             #any other value for filter is a category
             elif q_filter:
                 q_filter = {u'category': q_filter} 
+            else:
+                q_filter = {}
+                
+            # TODO - limit filter to events user can attend
+            #        (broadcast and invited)
 
         # Limit to nearby times
         q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
