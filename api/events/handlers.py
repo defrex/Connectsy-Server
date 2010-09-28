@@ -18,6 +18,7 @@ UNTIL_LIMIT = 1000 * 60 * 60 * 24 * 30 # 30d
 # won't be displayed
 SINCE_LIMIT = 1000 * 60 * 60 * 4 # 4h
 
+# Any character matching this regex is stripped from the username
 username_sanitizer = re.compile(r"\W")
 
 class EventsHandler(BaseHandler):
@@ -158,7 +159,7 @@ class EventsHandler(BaseHandler):
             
             # Assemble the query.  Note the use of $or, which basically
             # gives us the union for free.
-            q_filter = { u'$or': [
+            q_filter = {u'$or': [
                 # Events user is invited to
                 {u'_id': {u'$in': events_user_invited}},
                 # Broadcast events the user's friends are invited to
@@ -184,14 +185,23 @@ class EventsHandler(BaseHandler):
             else:
                 q_filter = {}
                 
-            # TODO - limit filter to events user can attend
-            #        (broadcast and invited)
+            #grab all the events the user's invited to
+            user_invited = [ObjectId(a[u'event']) for a in \
+                db.objects.attendance.query({u'username': username})]
+                
+            #the query
+            q_filter.update({u'$or': [
+                # All broadcast events
+                {u'broadcast': True},
+                # Events created by the user
+                {u'creator': username},
+                # Non-broadcast events that the user's invited to
+                {u'_id': {u'$in': user_invited}},
+            ]})
 
         # Limit to nearby times
         q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
             u'$gt': timestamp() - SINCE_LIMIT}})
-            
-        print q_filter
         
         # Handle geo sorting
         if q_sort == u'nearby':
