@@ -187,7 +187,7 @@ class EventsHandler(BaseHandler):
                 
             #grab all the events the user's invited to
             user_invited = [ObjectId(a[u'event']) for a in \
-                db.objects.attendance.query({u'username': username})]
+                db.objects.attendance.find({u'username': username})]
                 
             #the query
             q_filter.update({u'$or': [
