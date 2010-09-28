@@ -190,6 +190,8 @@ class EventsHandler(BaseHandler):
         # Limit to nearby times
         q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
             u'$gt': timestamp() - SINCE_LIMIT}})
+            
+        print q_filter
         
         # Handle geo sorting
         if q_sort == u'nearby':
