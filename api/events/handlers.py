@@ -11,12 +11,12 @@ from base_handlers import BaseHandler
 from api.users.friends import status as friend_status
 from api.users.friends.friend_utils import get_friends
 
-# Events occuring more than UNTIL_LIMIT seconds from now won't be
-# displayed
-UNTIL_LIMIT = 60 * 60 * 24 * 30 # 30d
-# Events occuring more than SINCE_LIMIT seconds before now won't
+# Events occuring more than UNTIL_LIMIT milliseconds from now won't
 # be displayed
-SINCE_LIMIT = 60 * 60 * 4 # 4h
+UNTIL_LIMIT = 1000 * 60 * 60 * 24 * 30 # 30d
+# Events occuring more than SINCE_LIMIT millie seconds before now
+# won't be displayed
+SINCE_LIMIT = 1000 * 60 * 60 * 4 # 4h
 
 username_sanitizer = re.compile(r"\W")
 
@@ -188,8 +188,8 @@ class EventsHandler(BaseHandler):
             #        (broadcast and invited)
 
         # Limit to nearby times
-        q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT},
-            u'when': {u'$gt': timestamp() - SINCE_LIMIT}})
+        q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
+            u'$gt': timestamp() - SINCE_LIMIT}})
             
         print q_filter
         
