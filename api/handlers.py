@@ -8,11 +8,11 @@ def nice_time(span):
     Generates a nice time description from a span
     '''
     if span > 60 * 60 * 24: #days
-        return u'%s days' % span / (60 * 60 * 24)
+        return u'%s days' % (span / (60 * 60 * 24))
     elif span > 60 * 60: #hours
-        return u'%s hours' % span / 360
+        return u'%s hours' % (span / 360)
     elif span > 60: #minutes
-        return u'%s minutes' % span / 60
+        return u'%s minutes' % (span / 60)
     else:
         return u'%s seconds' % span
         
