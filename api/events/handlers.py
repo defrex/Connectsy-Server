@@ -11,10 +11,14 @@ from base_handlers import BaseHandler
 from api.users.friends import status as friend_status
 from api.users.friends.friend_utils import get_friends
 
-username_sanitizer = re.compile(r"\W")
+# Events occuring more than UNTIL_LIMIT seconds from now won't be
+# displayed
+UNTIL_LIMIT = 60 * 60 * 24 * 30 # 30d
+# Events occuring more than SINCE_LIMIT seconds before now won't
+# be displayed
+SINCE_LIMIT = 60 * 60 * 4 # 4h
 
-# TODO (in both friends and normal search): limit events return to those
-#   that start four hours ago and later
+username_sanitizer = re.compile(r"\W")
 
 class EventsHandler(BaseHandler):
     @require_auth
@@ -58,8 +62,8 @@ class EventsHandler(BaseHandler):
 
         #grab the sorting/filtering types from the args
         #funky names avoid conflict with python builtins
-        q_sort = self.get_argument('sort', None)
-        q_filter = self.get_argument('filter', None)
+        q_sort = self.get_argument(u'sort', u'nearby')
+        q_filter = self.get_argument(u'filter', None)
 
         #prep filtering
         if q_filter == 'friends':
@@ -82,9 +86,16 @@ class EventsHandler(BaseHandler):
             #   * Events the user is invited to or attending
             #   * Events just the user's friends are invited to or attending
             #
+            # NOTE: MR is used rather than an aggregation function because
+            #       currently MongoDB doesn't support shareded aggregate ops.
+            #
             # We then do a big query on the `event` collection that looks
             # for events from those lists using $or operators.
-            # TODO - more detail here
+            #   
+            #   1: User is invited to or attending event
+            #   2: Event is broadcast and friend is invited/attending
+            #   3: Event is broadcast and friend created it
+            #
             
             # Get the user's friends
             friends = get_friends(username)
@@ -154,48 +165,44 @@ class EventsHandler(BaseHandler):
                 {u'broadcast': True, u'_id': {u'$in': events_friends_invited}},
                 # Broadcast events started by the user's friends
                 {u'broadcast': True, u'_id': {u'$in': events_friends_created}},
-                # Add a geospatial index to get a location sort
-                ], u'posted_from': {u'$near': where}
-            }
-            
-            # Override the sorting option so it doesn't overwrite the query
-            q_sort = u'NO SORT FOR YOU'
+            ]}
             
             ### FINAL RESULTS:
             # Union of the following events:
             #   All events the user is invited to
             #   All broadcast events the user's friends are invited to
             #   All broadcast events started by the user's friends
-            #
-            # Sorted by distance
-        #show only this user's created events
-        elif q_filter == u'creator':
-            q_username = self.get_argument(u'username', username)
-            q_filter = {u'creator': q_username}
-        #any other value for filter is a category
-        elif q_filter:
-            q_filter = {u'category': q_filter} 
+            
+        # All other query types share a common base query
         else:
-            q_filter = {}
+            custom = {}
+        
+            #show only this user's created events
+            if q_filter == u'creator':
+                q_filter = {u'creator': self.get_argument(u'username', username)}
+            #any other value for filter is a category
+            elif q_filter:
+                q_filter = {u'category': q_filter} 
 
-        #set up the base query
-        if q_sort is None or q_sort == u'nearby':
-            #make sure there's a default sort here
-            q_sort = q_sort or u'soon'
-
-            #grab lat/lng from the query, defaulting to toronto
+        # Limit to nearby times
+        q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
+            u'$gt': timestamp() - SINCE_LIMIT}})
+        
+        # Handle geo sorting
+        if q_sort == u'nearby':
+            #set up location info
             lat = float(self.get_argument('lat', '43.652527'))
             lng = float(self.get_argument('lng', '-79.381961'))
             where = [lat, lng]
-            q = {u'posted_from': {u'$near': where}}
+            
+            #set the sort
+            q_filter.update({u'posted_from': {u'$near': where}})
 
-            #add filter to the query
-            q.update(q_filter)
+            #use 'soon' as a secondary sort
+            q_sort = u'soon'
 
-            #run the query
-            events = db.objects.event.find(q)
-        else:
-            events = db.objects.event.find(q_filter, limit=30)
+        # Run the query
+        events = db.objects.event.find(q_filter, limit=30)
 
         #perform the required sorting
         if q_sort == u'created':
@@ -206,8 +213,6 @@ class EventsHandler(BaseHandler):
         #output the results
         result = {u'events': [e[u'revision'] for e in events]}
         self.write(result)
-
-
 
 class EventHandler(BaseHandler):
 
