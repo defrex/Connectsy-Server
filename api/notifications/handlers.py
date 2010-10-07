@@ -30,6 +30,5 @@ class RegistrationHandler(BaseHandler):
             u'client_id': body[u'client_id'],
             #the client_extra field is optional, but we want the field present
             #in the db even if the client didn't supply it
-            u'client_extra': body[u'client_extra'] if u'client_extra' in body \
-                else None
+            u'client_extra': body[u'client_extra'] if u'client_extra' in body else None
         })

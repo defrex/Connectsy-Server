@@ -22,6 +22,9 @@ class GenericPollHandler(BaseHandler):
         if not client_id or not db.objects.notification_reg.find_one({
             u'client_id': client_id, u'user': self.get_session()[u'username']}):
             raise HTTPError(403)
+        else:
+            print db.objects.notification_reg.find_one({
+                    u'client_id': client_id, u'user': self.get_session()[u'username']})
         
         # Our grand modification command
         modify_command = {
