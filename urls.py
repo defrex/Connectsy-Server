@@ -29,6 +29,6 @@ handlers = [
     (r"/events/(?P<event_id>\w*)/comments/", CommentsHandler),
     (r"/categories/", CategoriesHandler),
     (r"/extras/maps/", MapsHandler),
-    (r"/extras/sms/", SMSHandler),
+    (r"/extras/SMS/", SMSHandler),
 ]
 
