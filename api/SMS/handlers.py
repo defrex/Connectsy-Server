@@ -7,6 +7,8 @@ from base_handlers import BaseHandler
 from api.events.attendance import status
 import settings
 
+from api.SMS import SMS_OUTPUT_URL
+
 class SMSHandler(BaseHandler):
     
     def post(self):
@@ -51,3 +53,9 @@ class SMSHandler(BaseHandler):
         
         if '#what' in body:
             message = 'What: '+event[u'what']+' -Get the app'
+            
+            account.request(SMS_OUTPUT_URL, 'POST', {
+                    'To': contact_number,
+                    'From': twilio_number,
+                    'Body': message,
+                })
