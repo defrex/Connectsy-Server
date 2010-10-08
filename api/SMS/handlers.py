@@ -1,4 +1,6 @@
 
+from tornado.web import HTTPError
+
 import db
 from base_handlers import BaseHandler
 from api.events.attendance import status
