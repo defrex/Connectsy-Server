@@ -5,6 +5,7 @@ from lib import twilio
 import db
 from base_handlers import BaseHandler
 from api.events.attendance import status
+import settings
 
 class SMSHandler(BaseHandler):
     
