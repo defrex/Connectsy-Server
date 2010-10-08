@@ -35,7 +35,7 @@ class EventsHandler(BaseHandler):
         try:
             event[u'where'] = req_body[u'where']
             event[u'when'] = req_body[u'when']
-            event[u'desc'] = req_body[u'desc']
+            event[u'what'] = req_body[u'what']
             event[u'broadcast'] = req_body[u'broadcast']
             event[u'posted_from'] = req_body[u'posted_from']
             event[u'location'] = req_body.get(u'location', '')
