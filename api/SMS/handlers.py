@@ -17,6 +17,7 @@ class SMSHandler(BaseHandler):
         
         print 'contact_number', contact_number
         print 'twilio_number', twilio_number
+        print twilio_number.__class__
         sms_reg = db.objects.sms_reg.find_one({u'contact_number': contact_number,
                                                u'twilio_number': twilio_number})
         if sms_reg is None:
