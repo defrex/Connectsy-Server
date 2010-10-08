@@ -6,11 +6,11 @@ from api.events.attendance import status
 class SMSHandler(BaseHandler):
     
     def post(self):
-        contact_number = self.get_argument(u'From', None)
-        twilio_number = self.get_argument(u'To', None)
-        body = self.get_arguemnt(u'Body', None)
-        
-        if None in (contact_number, twilio_number, body):
+        try:
+            contact_number = self.request.arguments[u'From']
+            twilio_number = self.request.arguments[u'To']
+            body = self.request.arguments[u'Body']
+        except KeyError:
             raise HTTPError(400)
         
         print 'contact_number', contact_number
