@@ -1,3 +1,6 @@
+
+import json
+
 from tornado.web import HTTPError
 
 import db
@@ -28,22 +31,8 @@ class InvitesHandler(BaseHandler):
             
         #make sure the request has the correct info in the body
         body = self.body_dict()
-        print body
         if not body or (not u'users' in body and not u'contacts' in body):
             raise HTTPError(400)
-        
-        if u'contacts' in body:
-            if users != u'friends':
-                for contact in body[u'contacts']:
-                    u = db.objects.users.find_one({u'number': contact[u'number']})
-                    if u is not None:
-                        body[u'users'] = body.get(u'users') or list()
-                        if not u.username in body[u'users']:
-                            body[u'users'].append(u.username)
-                        del body[u'contacts'][contact]
-            
-            SMS.register(event, body[u'contacts'])
-            SMS.trigger(event, 'new')
         
         if u'users' in body:
             users = body[u'users']
@@ -78,4 +67,22 @@ class InvitesHandler(BaseHandler):
                 db.objects.attendance.insert({u'username': username,
                         u'event': event_id, u'timestamp': timestamp(),
                         u'status': status.INVITED})
+        
+        if u'contacts' in body:
+            if u'users' in body and body[u'users'] != u'friends':
+                for contact in body[u'contacts']:
+                    u = db.objects.user.find_one({u'number': contact[u'number']})
+                    if u is not None:
+                        body[u'users'] = body.get(u'users') or list()
+                        if not u.username in body[u'users']:
+                            body[u'users'].append(u.username)
+                        del body[u'contacts'][contact]
+            try:
+                SMS.register(event, body[u'contacts'])
+            except SMS.OutOfNumbersException, e:
+                self.write(json.dumps({'error': 'OUT_OF_NUMBERS',
+                                       'contacts': e.contacts,
+                                       'event_revision': event[u'revision']}))
+                self.set_status(409)
+            SMS.new_event(event, u'new')
         
