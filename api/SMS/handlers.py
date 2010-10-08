@@ -52,9 +52,6 @@ class SMSHandler(BaseHandler):
                     'From': twilio_number,
                     'Body': message,
                 })
-            print '#who sms sent'
-        else:
-            print 'no #who in', body
         
         if '#what' in body:
             message = 'What: '+event[u'what']+' -Get the app'
@@ -64,6 +61,3 @@ class SMSHandler(BaseHandler):
                     'From': twilio_number,
                     'Body': message,
                 })
-            print '#what sms sent'
-        else:
-            print 'no #what in', body
