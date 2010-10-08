@@ -9,14 +9,15 @@ class SMSHandler(BaseHandler):
     
     def post(self):
         try:
-            contact_number = self.request.arguments[u'From']
-            twilio_number = self.request.arguments[u'To']
+            contact_number = self.request.arguments[u'From'][0]
+            twilio_number = self.request.arguments[u'To'][0]
             body = self.request.arguments[u'Body']
         except KeyError:
             raise HTTPError(400)
         
         print 'contact_number', contact_number
         print 'twilio_number', twilio_number
+        print 'body', body
         print twilio_number.__class__
         sms_reg = db.objects.sms_reg.find_one({u'contact_number': contact_number,
                                                u'twilio_number': twilio_number})
