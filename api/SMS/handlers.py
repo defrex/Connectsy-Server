@@ -1,5 +1,6 @@
 
 from tornado.web import HTTPError
+from lib import twilio
 
 import db
 from base_handlers import BaseHandler
@@ -11,14 +12,10 @@ class SMSHandler(BaseHandler):
         try:
             contact_number = self.request.arguments[u'From'][0]
             twilio_number = self.request.arguments[u'To'][0]
-            body = self.request.arguments[u'Body']
+            body = self.request.arguments[u'Body'][0]
         except KeyError:
             raise HTTPError(400)
         
-        print 'contact_number', contact_number
-        print 'twilio_number', twilio_number
-        print 'body', body
-        print twilio_number.__class__
         sms_reg = db.objects.sms_reg.find_one({u'contact_number': contact_number,
                                                u'twilio_number': twilio_number})
         if sms_reg is None:
