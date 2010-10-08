@@ -13,6 +13,7 @@ class SMSHandler(BaseHandler):
         if None in (contact_number, twilio_number, body):
             raise HTTPError(400)
         
+        print contact_number, contact_number
         sms_reg = db.objects.sms_reg.find_one({u'contact_number': contact_number,
                                                u'twilio_number': twilio_number})
         if sms_reg is None:
