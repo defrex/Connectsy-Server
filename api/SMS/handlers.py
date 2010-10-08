@@ -44,6 +44,8 @@ class SMSHandler(BaseHandler):
                 message += u+', '
             if plus > 0:
                 message += 'and '+plus+' others.'
+            else:
+                message = message[:-2]
             
             account.request(SMS_OUTPUT_URL, 'POST', {
                     'To': contact_number,
