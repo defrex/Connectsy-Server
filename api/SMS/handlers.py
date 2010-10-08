@@ -37,7 +37,7 @@ class SMSHandler(BaseHandler):
             for att in db.objects.attendance.find({u'event': sms_reg[u'event']}):
                 if att[u'status'] == status.ATTENDING:
                     if len(adding) < 10:
-                        adding.append(attt[u'username'])
+                        adding.append(att[u'username'])
                     else:
                         plus += 1
             for u in adding:
