@@ -30,13 +30,13 @@ class SMSHandler(BaseHandler):
                                  settings.TWILIO_AUTH_TOKEN)
         
         if '#who' in body:
-            message = 'Who: '
+            message = 'Who\'s invited: '
             
             adding = list()
             plus = 0
             for att in db.objects.attendance.find({u'event': sms_reg[u'event']}):
                 if att[u'status'] == status.ATTENDING:
-                    if len(adding) < 10:
+                    if len(adding) < 9:
                         adding.append(att[u'username'])
                     else:
                         plus += 1
@@ -61,3 +61,6 @@ class SMSHandler(BaseHandler):
                     'From': twilio_number,
                     'Body': message,
                 })
+         
+
+

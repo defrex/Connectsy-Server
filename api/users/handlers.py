@@ -1,16 +1,16 @@
-import re
+
 import os
+import re
 import uuid
-from PIL import Image
+from PIL import Image #@UnresolvedImport
 from StringIO import StringIO
 
 from tornado.web import HTTPError
 
-import db
-from utils import json_encoder, hash, require_auth, timestamp
 from base_handlers import BaseHandler
-from friends import status
 from friends.friend_utils import friend_status
+from utils import hash, require_auth, timestamp
+import db
 
 username_sanitizer = re.compile(r"\W")
 
@@ -31,9 +31,12 @@ class UsersHandler(BaseHandler):
         results = []
         for user in users:
             username = user[u'username']
-            results.append({u'username': username,  u'friend_status': friend_status(current_user, username)})
+            results.append({u'username': username,  
+                            u'friend_status': friend_status(current_user, 
+                                                            username)})
         
         self.output({u'results': results})
+
 
 class UserHandler(BaseHandler):
     def put(self, username):
@@ -91,8 +94,8 @@ class AvatarHandler(BaseHandler):
     '''
     def find_file(self, username):
         extensions = ['png', 'jpg', 'gif']
-        files = map(lambda a: os.path.join(avatar_dir, '%s.%s' % (username, a)),
-            ['png', 'jpg', 'gif'])
+#        files = map(lambda a: os.path.join(avatar_dir, '%s.%s' % (username, a)),
+#            ['png', 'jpg', 'gif'])
         for extension in extensions:
             if os.path.exists(os.path.join(avatar_dir, '%s.%s' % (username, extension))):
                 return '%s.%s' % (username, extension)
@@ -100,7 +103,7 @@ class AvatarHandler(BaseHandler):
     
     def get(self, username):
         try:
-            abspath = os.path.join(avatar_dir, self.find_file(username))
+#            abspath = os.path.join(avatar_dir, self.find_file(username))
             self.redirect('/static/avatars/%s' % self.find_file(username))
         except AttributeError:
             raise HTTPError(404)

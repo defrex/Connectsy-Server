@@ -1,6 +1,6 @@
 # We're avoiding the json import in utils due to circular import issues
 try: import simplejson as json
-except: import json
+except ImportError: import json
 
 import uuid
 
