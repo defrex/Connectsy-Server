@@ -17,6 +17,17 @@ DB_NAME = 'consy'
 DB_HOST = None
 DB_PORT = None
 
+TWILIO_NUMBER = '14155992671'
+TWILIO_ACCOUNT_SID = "ACc809eb42ff3bfe0160cb5bd720241a28"
+TWILIO_AUTH_TOKEN = "426aeb9a2fabda0278b47fb36f84c8c6"
+TWILIO_API_VERION = "2010-04-01"
+TWILIO_NUMBERS = (
+    '+15126074649', # Austin
+    '+14155708208', # San Fran
+    '+16466005056', # New York
+    #'+13108959876', # L.A.
+    #'+16178703861', # Boston
+)
 
 # This is at the bottom so as to override anything we set here
 from settings_local import *

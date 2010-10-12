@@ -47,10 +47,14 @@ class UserHandler(BaseHandler):
         if not password: raise HTTPError(403)
         password = hash(password)
         
+        number = self.body_dict().get('number')
+        if not number: raise HTTPError(403)
+        
         #build the user.  make it stronger, faster...
         user = {
             u'username': username, 
             u'password': password,
+            u'number': number,
             u'revision': uuid.uuid1().hex,
             u'created': int(timestamp()),
         }

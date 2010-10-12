@@ -4,6 +4,9 @@ on the name used in winter.
 
 The object passed will be at the most recent winter revision.
 '''
+
+from datetime import datetime
+
 def session(obj):
     return obj
 
@@ -36,4 +39,10 @@ def comment(obj):
     return obj
     
 def notification_reg(obj):
+    return obj
+    
+def sms_reg(obj):
+    obj[u'id'] = str(obj[u'_id'])
+    del obj[u'_id']
+    obj[u'expires'] = datetime.fromtimestamp(obj[u'expires'])
     return obj

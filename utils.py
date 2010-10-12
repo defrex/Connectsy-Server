@@ -21,7 +21,11 @@ from json_encoder import json_encoder #convoluted, but avoids a circular import
 import time
 def timestamp():
     return int(time.time()*1000)
-    
+
+from datetime import datetime
+def from_timestamp(timestamp):
+    return datetime.fromtimestamp(timestamp/1000)
+
 # Generates a salted SHA1 hash of the specified value
 def hash(val):
     h = hashlib.sha1(val)
@@ -42,3 +46,6 @@ def require_auth(f):
             raise HTTPError(401)
         return f(self, *args, **kwargs)
     return sub
+
+def format_date(date):
+    pass
