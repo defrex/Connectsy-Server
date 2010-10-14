@@ -1,9 +1,21 @@
 from db import CSCursor
 import db
 
+
+class ModelCursor(CSCursor):
+    
+    def __init__(self, cursor, model_class):
+        self.model_class = model_class
+    
+    def next(self, *args, **kwargs):
+        result = super(ModelCursor, self).next(self, *args, **kwargs)
+        return self.model_class(**result)
+
+
 class Model(object):
     __collection__ = None
     __fields__ = None
+    __model_cursor__ = ModelCursor
     
     def __init__(self, **kwargs):
         if self.__collection__ is None:
@@ -13,7 +25,7 @@ class Model(object):
         # all models get id, but shoudn't have to add it themselves
         self.__fields__[u'id'] = None
         for key in kwargs:
-            if self.__fields__.__hasattr__(key):
+            if key in self.__fields__:
                 self.__fields__[key] = kwargs[key]
     
     def save(self, safe=False):
@@ -35,7 +47,7 @@ class Model(object):
     @staticmethod
     def find(cls, **query):
         cursor = db.objects.__getattr__(cls.__collection__).find(query)
-        return ModelCursor(cursor, cls)
+        return cls.__model_cursor__(cursor, cls)
     
     # dict-like methods:
     def __len__(self):
@@ -52,12 +64,3 @@ class Model(object):
     
     def __contains__(self, key):
         return self.__fields__.__contains__(key)
-
-class ModelCursor(CSCursor):
-    
-    def __init__(self, cursor, model_class):
-        self.model_class = model_class
-    
-    def next(self, *args, **kwargs):
-        result = super(ModelCursor, self).next(self, *args, **kwargs)
-        return self.model_class(**result)

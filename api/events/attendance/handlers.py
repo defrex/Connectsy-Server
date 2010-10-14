@@ -1,10 +1,10 @@
-import uuid
-from tornado.web import HTTPError
-
-import status
-import db
-from utils import timestamp, require_auth
+from api.events.attendance.models import Attendant
 from base_handlers import BaseHandler
+from tornado.web import HTTPError
+from utils import require_auth
+import db
+import status
+
 
 class AttendanceHandler(BaseHandler):
     @require_auth
@@ -14,24 +14,10 @@ class AttendanceHandler(BaseHandler):
         
         TODO - verify that the user is invited to this event
         '''
-        result = {u'attendants': [], u'timestamp': timestamp()}
-        until = self.get_argument('until', default=None)
-        #silly way of avoiding missed changes due to race conditions
-        if until is not None:
-            until -= 5000 
-        
-        #base query
-        atts = db.objects.attendance.find({u'event': event_id})
-        
-        #handle until
-        if until: atts = atts.where('timestamp > ' % until)
-        
-        #grab user and status from each attendance objects
-        tmp = {}
-        for att in atts: tmp[att[u'username']] = att[u'status']
-        
-        result[u'attendants'] = [{'username': k, 'status': v} for k, v in tmp.iteritems()]
-        
+        atts = Attendant.find({u'event': event_id})
+        result = {}
+        result[u'attendants'] = [{'username': k, 'status': v} 
+                                 for k, v in atts.iteritems()]
         self.write(result)
         
     @require_auth
@@ -44,17 +30,16 @@ class AttendanceHandler(BaseHandler):
         
         #make sure the event exists
         event = db.objects.event.find_one(event_id)
-        if not event:
-            raise HTTPError(404)
-            
+        if not event: raise HTTPError(404)
+        
         #try to grab the user's existing attendance status
-        att = db.objects.attendance.find_one({u'event': str(event['_id']),
+        att = Attendant.get({u'event': str(event['_id']),
                 u'username': username})
-                
+        
         #if the user isn't invited, we need to error out if broadcast is off
         if att is None:
             if event[u'broadcast']:
-                att = {u'username': username, u'event': event_id}
+                att = Attendant(username=username, event=event_id)
             else:
                 raise HTTPError(403)
         
@@ -64,11 +49,9 @@ class AttendanceHandler(BaseHandler):
         #make sure status is present and a correct value
         if body.get(u'status') not in valid_statuses:
             raise HTTPError(400)
-            
-        #update or create the attendance status
-        att[u'timestamp'] = timestamp()
-        att[u'status']    = body[u'status']
-        db.objects.attendance.save(att)
+        
+        att[u'status'] = body[u'status']
+        att.save()
 
         # Hooray!
         self.finish()

@@ -1,9 +1,10 @@
-from tornado.web import HTTPError
-
-import db
-from notifications import notifiers
-from utils import timestamp, require_auth
 from base_handlers import BaseHandler
+from notifications import notifiers
+from notifications.models import NotificationRegister
+from tornado.web import HTTPError
+from utils import timestamp, require_auth
+import db
+
 
 class RegistrationHandler(BaseHandler):
     
@@ -19,11 +20,7 @@ class RegistrationHandler(BaseHandler):
         if not body[u'client_type'] in notifiers:
             raise HTTPError(501)
             
-        #remove any old db records with the same client id
-        db.objects.notification_reg.remove({u'client_id': body[u'client_id']})
-            
-        #add the record to the db
-        db.objects.notification_reg.insert({
+        NotificationRegister(**{
             u'user': self.get_session()[u'username'],
             u'timestamp': timestamp(),
             u'client_type': body[u'client_type'],
@@ -31,4 +28,4 @@ class RegistrationHandler(BaseHandler):
             #the client_extra field is optional, but we want the field present
             #in the db even if the client didn't supply it
             u'client_extra': body[u'client_extra'] if u'client_extra' in body else None
-        })
+        }).save()

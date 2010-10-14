@@ -11,6 +11,10 @@ PORT = 8080
 # MongoDB database name
 DB_NAME = 'consy'
 
+# is true, the tests are run rather then the server
+TEST = False
+TEST_DB = 'consy_testing'
+
 # When these are set to None, the MongoDB defaults are used.  Override
 # these values in your local settings if your database server runs on
 # a non-local machine or a non-standard port.

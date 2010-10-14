@@ -1,6 +1,6 @@
 
 from tornado.web import HTTPError
-from lib import twilio
+import twilio
 
 import db
 from base_handlers import BaseHandler

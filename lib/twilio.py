@@ -32,7 +32,7 @@ from xml.sax.saxutils import escape, quoteattr
 try:
     from google.appengine.api import urlfetch
     APPENGINE = True
-except:
+except ImportError:
     APPENGINE = False
 
 _TWILIO_API_URL = 'https://api.twilio.com'

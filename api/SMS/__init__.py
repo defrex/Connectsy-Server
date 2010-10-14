@@ -3,13 +3,12 @@ from api.SMS.models import SMSRegister
 from api.SMS.sms_utils import format_date
 from api.users.models import User
 from datetime import datetime
+from notifications.models import NotificationRegister
 from urllib2 import HTTPError
 from utils import timestamp, from_timestamp
 import db
 import settings
 import twilio
-
-
 
 
 SMS_INPUT_URL = u'http://%s/extras/SMS/' % settings.DOMAIN
@@ -20,20 +19,36 @@ SMS_OUTPUT_URL = u'/%(api_version)s/Accounts/%(account_sid)s/SMS/Messages' % {
 
 
 class OutOfNumbersException(Exception):
-    def __init__(self, contacts):
-        self.contacts = contacts
+    def __init__(self, contacts, users):
+        self.out_of_numbers = contacts
+        self.registered = users
     
     def __str__(self):
-        return 'There are no numbers left for: '+self.contacts
+        return 'There are no numbers left for: '+self.out_of_numbers
 
 
 def register(event, contacts):
-    out_of_numbers = list()
     if not u'id' in event:
         event[u'id'] = str(event[u'_id'])
     
+    registered = list()
+    out_of_numbers = list()
+    has_username = list()
+    
     for contact in contacts:
-        registered = db.objects.sms_reg.find({u'contact_number': contact[u'number']})
+        user = User.get({u'number': contact[u'number']})
+        if user is None:
+            user = User(number=contact[u'number'], 
+                        display_name=contact[u'display_name'])
+            user.save()
+        
+        # Connectsy users don't get SMS
+        if user[u'username'] is not None:
+            has_username.append(user)
+            continue
+        
+        # make sure this user still has numbers available
+        registered = SMSRegister.find({u'contact_number': contact[u'number']})
         potential_numbers = [n for n in settings.TWILIO_NUMBERS]
         for reg in registered:
             if from_timestamp(reg[u'expires']) > datetime.now():
@@ -41,19 +56,24 @@ def register(event, contacts):
                                      if n != reg[u'twilio_number']]
         if len(potential_numbers) == 0:
             out_of_numbers.append(contact)
-        else:
-            user = User.get({u'number': contact[u'number']})
-            if user is None:
-                user = User(number = contact[u'number'], 
-                            display_name=contact[u'display_name'])
-                user.save()
-            SMSRegister(contact_number=contact[u'number'], 
-                        twilio_number=potential_numbers[0], 
-                        event=event[u'id'], 
-                        expires=event[u'when'],
-                        user=user[u'id']).save()
-    if len(out_of_numbers) > 0:
-        raise OutOfNumbersException(out_of_numbers)
+            continue
+        
+        registered.append(user)
+        SMSRegister(contact_number=contact[u'number'], 
+                    twilio_number=potential_numbers[0], 
+                    event=event[u'id'], 
+                    expires=event[u'when'],
+                    user=user[u'id']).save()
+        
+        #register with the notifications system as well
+        NotificationRegister(**{
+            u'user': user[u'id'],
+            u'timestamp': timestamp(),
+            u'client_type': 'SMS',
+            u'client_id': contact[u'number'],
+        }).save()
+    
+    return registered, out_of_numbers, has_username
 
 
 def new_event(event):

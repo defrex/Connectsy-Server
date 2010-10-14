@@ -131,7 +131,13 @@ class CSConnection(object):
         
     def __init__(self, dbname, host='127.0.0.1', port=27017):
         self.dbname = dbname
+        self.host = host
+        self.port = port
         self.connection = Connection(host=host, port=port)
+    
+    def reconnect(self):
+        self.connection.disconnect()
+        self.connection = Connection(host=self.host, port=self.port)
     
     def get_database(self, dbname=None):
         dbname = dbname or self.dbname

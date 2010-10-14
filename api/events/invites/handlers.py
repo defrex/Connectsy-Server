@@ -1,15 +1,16 @@
 
-import json
-
-from tornado.web import HTTPError
-
-import db
-import notifications
-from api.events.attendance import status
-from utils import timestamp, require_auth
-from base_handlers import BaseHandler
-from api.users.friends import status as friend_status
 from api import SMS
+from api.events.attendance.models import Attendant
+from api.users.friends import status as friend_status
+from api.users.models import User
+from base_handlers import BaseHandler
+from tornado.web import HTTPError
+from utils import require_auth
+import db
+import json
+import notifications
+
+
 
 class InvitesHandler(BaseHandler):
     '''
@@ -47,46 +48,35 @@ class InvitesHandler(BaseHandler):
                 friends += [friend[u'from'] for friend in db.objects.friend.find({u'to':
                         username, u'status': friend_status.ACCEPTED})]
                 users = friends 
-           
-           
-            if u'contacts' in body:
-                for contact in body[u'contacts']:
-                    u = db.objects.user.find_one({u'number': contact[u'number']})
-                    if u is not None:
-                        del body[u'contacts'][contact]
-                        if not u.username in users:
-                            users.append(u.username)
-           
-            #grab the existing attendance info
-            attendance = db.objects.attendance.find({u'event': event_id})
-            #only create new attendances for people who weren't already there
-            for att in attendance:
-                #man, hash tables sure are lovely for avoiding O(n^2) runtimes...
-                if att[u'username'] in users:
-                    del users[att[u'username']]
-                    
+            
             #prevent people from inviting themselves
             if event[u'creator'] in users:
                 del users[event[u'creator']]
-                
-            for username in users:
+            
+            # convert usernames to user objects
+            users = list(User.find({u'username': {'$in': users}}))
+            
+            if u'contacts' in body:
+                registered, out_of_numbers, has_username = SMS.register(event, 
+                                                            body[u'contacts'])
+                users += has_username
+                users += registered
+                if len(out_of_numbers) > 0:
+                    self.write(json.dumps({'error': 'OUT_OF_NUMBERS',
+                                           'contacts': out_of_numbers,
+                                           'event_revision': event[u'revision']}))
+                    self.set_status(409)
+            
+            for user in users:
+                if user[u'username'] is not None:
+                    name = user[u'username']
+                else:
+                    name = user[u'id']
                 #send the invite notification
-                notifications.send(username, {u'type': 'invite', 
-                                              u'event_revision': event[u'revision']})
-                #build out the new attendance object
-                db.objects.attendance.insert({u'username': username,
-                        u'event': event_id, u'timestamp': timestamp(),
-                        u'status': status.INVITED})
-        
-        if u'contacts' in body:
-            try:
-                SMS.register(event, body[u'contacts'])
-            except SMS.OutOfNumbersException, e:
-                self.write(json.dumps({'error': 'OUT_OF_NUMBERS',
-                                       'contacts': e.contacts,
-                                       'event_revision': event[u'revision']}))
-                self.set_status(409)
-            SMS.new_event(event)
+                notifications.send(name, {u'type': 'invite', 
+                                          u'event_revision': event[u'revision'],
+                                          u'event_id': event[u'id']})
+                Attendant(user=user[u'id'], event=event_id).save()
         
 
 
