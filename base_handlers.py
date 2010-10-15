@@ -1,9 +1,5 @@
-from os.path import join
-import logging
 
 import tornado.web
-import tornado.escape
-import tornado.auth
 from tornado.web import HTTPError
 
 import db
@@ -20,9 +16,11 @@ class BaseHandler(tornado.web.RequestHandler):
         '''
         self.set_status(status)
         self.set_header("Content-Type", "application/json; charset=UTF-8")
-        self.write(json_encoder(obj))
+        op = json_encoder(obj)
+        if settings.DEVELOPMENT: print op
+        self.write(op)
         self.finish()
-        
+    
     def created(self, obj=None):
         '''
         Finishes the request, telling the user that something was successfully
@@ -43,17 +41,13 @@ class BaseHandler(tornado.web.RequestHandler):
         #try to grab the token from the request
         token = self.request.headers.get('Authenticate')
         if token is None: return None
-        if token:
-            #strip leading 'Token '
-            if not token.startswith('Token '):
-                return None
-            token = token[6:]
-            
-            #make sure the token format is correct
-            if not token.startswith('auth='):
-                return None
-            token = token[5:]
-
+        
+        #strip leading 'Token auth='
+        prefix = 'Token auth='
+        if not token.startswith(prefix): 
+            return None
+        token = token[len(prefix):]
+        
         #fetch the session from the database, and cache it
         self.session = db.objects.session.find_one(token)
         

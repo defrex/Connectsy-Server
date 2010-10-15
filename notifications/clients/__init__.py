@@ -8,7 +8,8 @@ def import_client(name):
     def cleanup():
         del notifiers[name]
     atexit.register(cleanup)
-    
+
 # import clients here
 import_client('android_froyo')
 import_client('generic_poll')
+import_client('SMS')

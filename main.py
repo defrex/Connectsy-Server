@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import functools
 import httplib
+import os
+import settings
+import sys
 
 # The connectsy daemon is a symlink to main.py. It fails to load the libraries
 # since its current directory is init.d. This solution is a major hack.
@@ -14,14 +14,11 @@ if curpath == '/etc/init.d': curpath = '/var/www/server'
 sys.path.insert(0, os.path.abspath(os.path.join(curpath, 'lib', 'tornado')))
 sys.path.insert(0, os.path.abspath(os.path.join(curpath, 'lib')))
 
-
-from tornado import autoreload as reload
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.options import define, options, parse_command_line
 from tornado.web import Application
-import settings
-
+from tornado import autoreload as reload
 
 def runserver(autoreload=True):
     # Fire up command line settings
@@ -29,17 +26,26 @@ def runserver(autoreload=True):
     define('port', type=int, help='Run on the given port')
     define('db_name', type=str, help='Run using this db name')
     define('runtests', type=bool, help='Run tests')
+    define('allowsms', type=bool, help='Include tests that send SMS messages')
     define('testserver', type=bool, help='Run test server')
+    define('console', type=bool, help='Start interactive console')
+    define('clean_db', type=bool, help='Delete all data')
     parse_command_line()
     
     testserver = options['testserver'].value()
-    del options['testserver']
     runtests = options['runtests'].value()
-    del options['runtests']
+    console = options['console'].value()
+    clean_db = options['clean_db'].value()
     
-    for setting, value in options.iteritems():
-        if value.value():
-            setattr(settings, setting.upper(), value.value())
+    port = options['port'].value()
+    if port: settings.PORT = port
+    
+    allowsms = options['allowsms'].value()
+    if allowsms: settings.TEST_SMS = allowsms
+    else: settings.TEST_SMS = False
+    
+    db_name = options['db_name'].value()
+    if db_name: settings.DB_NAME = db_name
     
     # httplib is not RFC 2324 compliant, so we fix that here
     httplib.responses[418] = "I'm a teapot"
@@ -55,11 +61,20 @@ def runserver(autoreload=True):
     if runtests or testserver:
         setattr(settings, 'DB_NAME', settings.TEST_DB)
     
-    if runtests:
+    if clean_db:
+        import winter
+        import db
+        for c in winter.managers:
+            db.objects.get_database().drop_collection(c)
+    elif console:
+        import ipdb
+        ipdb.set_trace()
+    elif runtests:
         import unittest2
         from tests import main
         suite = unittest2.defaultTestLoader.loadTestsFromModule(main)
         unittest2.TextTestRunner(verbosity=2).run(suite)
+        autoreload = True
     else:
         # Start Tornado
         http_server = HTTPServer(Application(handlers, 
@@ -67,9 +82,9 @@ def runserver(autoreload=True):
         http_server.bind(settings.PORT)
         http_server.start(processes)
         lp = IOLoop.instance()
-        print 'Server running: http://0.0.0.0:%s' % settings.PORT
-        if not settings.TEST and autoreload and settings.DEVELOPMENT: 
+        if autoreload: 
             reload.start(lp)
+        print 'Server running: http://0.0.0.0:%s' % settings.PORT
         lp.start()
 
 if __name__ == "__main__":

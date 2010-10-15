@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from utils import from_timestamp
 
 def format_date(raw_date):
+    raw_date = int(raw_date)
     date = from_timestamp(raw_date)
     today = datetime.now()
     delta = date - today

@@ -1,13 +1,14 @@
 
+from api.SMS import SMS_OUTPUT_URL
+from api.SMS.models import SMSRegister
+from api.events.attendance import status
+from base_handlers import BaseHandler
 from tornado.web import HTTPError
+import db
+import settings
 import twilio
 
-import db
-from base_handlers import BaseHandler
-from api.events.attendance import status
-import settings
 
-from api.SMS import SMS_OUTPUT_URL
 
 class SMSHandler(BaseHandler):
     
@@ -19,8 +20,8 @@ class SMSHandler(BaseHandler):
         except KeyError:
             raise HTTPError(400)
         
-        sms_reg = db.objects.sms_reg.find_one({u'contact_number': contact_number,
-                                               u'twilio_number': twilio_number})
+        sms_reg = SMSRegister.get({u'contact_number': contact_number,
+                                   u'twilio_number': twilio_number})
         if sms_reg is None:
             raise HTTPError(404)
         

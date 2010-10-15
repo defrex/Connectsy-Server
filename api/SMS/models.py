@@ -4,7 +4,6 @@ import db
 
 class SMSRegister(Model):
     __collection__ = 'sms_reg'
-    
     __fields__ = {
         u'contact_number': None,
         u'twilio_number': None,
@@ -15,10 +14,10 @@ class SMSRegister(Model):
     
     def save(self):
         find = {
-            u'contact_number': object[u'contact_number'],
-            u'twilio_number': object[u'twilio_number'],
+            u'contact_number': self[u'contact_number'],
+            u'twilio_number': self[u'twilio_number'],
         }
-        db.objects.sms_reg.update(find, object, upsert=True)
+        db.objects.sms_reg.update(find, self.__data__, upsert=True)
 
     
 

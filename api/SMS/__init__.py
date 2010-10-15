@@ -39,7 +39,7 @@ def register(event, contacts):
         user = User.get({u'number': contact[u'number']})
         if user is None:
             user = User(number=contact[u'number'], 
-                        display_name=contact[u'display_name'])
+                        display_name=contact[u'name'])
             user.save()
         
         # Connectsy users don't get SMS
@@ -48,9 +48,8 @@ def register(event, contacts):
             continue
         
         # make sure this user still has numbers available
-        registered = SMSRegister.find({u'contact_number': contact[u'number']})
         potential_numbers = [n for n in settings.TWILIO_NUMBERS]
-        for reg in registered:
+        for reg in SMSRegister.find({u'contact_number': contact[u'number']}):
             if from_timestamp(reg[u'expires']) > datetime.now():
                 potential_numbers = [n for n in potential_numbers 
                                      if n != reg[u'twilio_number']]
@@ -66,12 +65,13 @@ def register(event, contacts):
                     user=user[u'id']).save()
         
         #register with the notifications system as well
-        NotificationRegister(**{
+        note = {
             u'user': user[u'id'],
             u'timestamp': timestamp(),
             u'client_type': 'SMS',
             u'client_id': contact[u'number'],
-        }).save()
+        }
+        NotificationRegister(**note).save()
     
     return registered, out_of_numbers, has_username
 

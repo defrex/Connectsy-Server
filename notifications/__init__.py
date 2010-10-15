@@ -1,13 +1,18 @@
 from clients import notifiers
-
+from notifications.models import NotificationRegister
 import db
+
 
 def send(user, message):
     '''
     Sends a message to all of a user's registered listeners
     '''
-    listeners = db.objects.notification_reg.find({u'user': user})
+    listeners = NotificationRegister.find({u'user': user})
+    
+    results = list()
     for listener in listeners:
-        notifiers[listener[u'client_type']].send(user, listener[u'client_id'],
-                message)
+        results.append(notifiers[listener[u'client_type']]
+                       .send(user, listener[u'client_id'], message))
+    #this return is mainly to make all this testable
+    return results
     

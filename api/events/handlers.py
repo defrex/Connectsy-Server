@@ -41,8 +41,8 @@ class EventsHandler(BaseHandler):
             event[u'location'] = req_body.get(u'location', '')
             event[u'category'] = req_body.get(u'category', '') #optional field
         except KeyError, e:
-            print e
-            raise HTTPError(400) #TODO - detail what was missing
+            self.output({'error': 'MISSING_FIELDS',
+                         'field_missing': e[0]}, 400)
         else:
             event[u'creator'] = self.get_session()[u'username']
             event[u'created'] = int(timestamp())
@@ -50,8 +50,8 @@ class EventsHandler(BaseHandler):
 
             response[u'revision'] = event[u'revision']
             response[u'id'] = str(db.objects.event.insert(event))
-
-        self.output(response, 201)
+            
+            self.output(response, 201)
 
     @require_auth
     def get(self):

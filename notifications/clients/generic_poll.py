@@ -24,8 +24,8 @@ When a client polls for new notifications, this list will be atomically
 emptied with another findandmodify command (see /api/notifications/handlers.py).
 '''
 
-import db
 from notifications import notifier
+import db
 
 class Notifier(notifier.Notifier):
     def __init__(self):
@@ -41,18 +41,12 @@ class Notifier(notifier.Notifier):
         Stores the message in the database, to be sent when the client
         asks for notifications.
         '''
-        modify_command = {
-            # get the record for the client_id
-            u'query': {u'client_id': client_id},
-            # perform the append operation
-            u'update': {
-                # append the message at the end of the array
-                u'$push': {u'notifications': message}
-            },
-            # create the record if one doesn't yet exist
-            u'upsert': True,
-        }
-        
         #execute the command
-        db.objects.get_database().command(u'findandmodify',
-            'generic_poll_client', **modify_command)
+        db.objects.generic_poll_client.update(
+            {u'client_id': client_id},
+            {u'$push': {u'notifications': message}},
+            upsert=True
+        )
+    
+
+

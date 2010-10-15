@@ -4,18 +4,20 @@ from api.SMS.sms_utils import format_date
 from api.events.models import Event
 from notifications import notifier
 from urllib2 import HTTPError
-import json
 import settings
 import twilio
 
 class Notifier(notifier.Notifier):
     
     def send(self, user, client_id, message):
-        message = json.loads(message)
+        
         smsee = SMSRegister.get({u'event': message[u'event_id'],
                                  u'contact_number': client_id})
-        if smsee is None: return
-        event = Event.get(smsee[u'event'])
+        if smsee is None: return False
+        
+        event = Event.get(message[u'event_id'])
+        if event is None: return False
+        
         account = twilio.Account(settings.TWILIO_ACCOUNT_SID,
                                  settings.TWILIO_AUTH_TOKEN)
         message = ('%(username)s invited you to %(where)s %(when)s. '
@@ -31,8 +33,9 @@ class Notifier(notifier.Notifier):
                     'Body': message,
                     'From': smsee[u'twilio_number'],
                 })
+            return True
         except HTTPError, e:
             print e.read()
-            raise
+            return False
 
 

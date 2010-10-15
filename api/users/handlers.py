@@ -1,16 +1,17 @@
 
+from PIL import Image #@UnresolvedImport
+from StringIO import StringIO
+from api.users.models import User
+from base_handlers import BaseHandler
+from friends.friend_utils import friend_status
+from tornado.web import HTTPError
+from utils import hash, require_auth, timestamp
+import db
 import os
 import re
 import uuid
-from PIL import Image #@UnresolvedImport
-from StringIO import StringIO
 
-from tornado.web import HTTPError
 
-from base_handlers import BaseHandler
-from friends.friend_utils import friend_status
-from utils import hash, require_auth, timestamp
-import db
 
 username_sanitizer = re.compile(r"\W")
 
@@ -50,28 +51,15 @@ class UserHandler(BaseHandler):
         if not password: raise HTTPError(403)
         password = hash(password)
         
-        number = self.body_dict().get('number')
-        if not number: raise HTTPError(403)
-        
-        #build the user.  make it stronger, faster...
-        user = {
+        User(**{
             u'username': username, 
             u'password': password,
-            u'number': number,
+            u'number': self.body_dict().get('number'),
             u'revision': uuid.uuid1().hex,
             u'created': int(timestamp()),
-        }
+        }).save()
         
-        #save the user
-        db.objects.user.insert(user)
-        
-        #sanitize the user manually, since it didn't come from the db
-        user['_id'] = 0 #fake id so the sanitizer works
-        del user['_winter'] #delete the winter revision
-        user = db.sanitizers.user(user)
-        
-        #write the user to the response
-        self.output(user, 201)
+        self.set_status(201)
     
     @require_auth
     def get(self, username):

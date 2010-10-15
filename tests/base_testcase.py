@@ -1,17 +1,21 @@
 
+from api.users.models import User
 from httplib import HTTPConnection
 from unittest2 import TestCase
+from urllib import urlencode
+from utils import timestamp
 import db
 import json
 import settings
+import uuid
+import winter
 
 
 class ConsyTestCase(TestCase):
     
     def flush_db(self):
-        db.objects.reconnect()
-        db.objects.connection.drop_database(db.objects.get_database())
-        db.objects.reconnect()
+        for c in winter.managers:
+            db.objects.get_database().drop_collection(c)
     
     def setUp(self):
         self.flush_db()
@@ -24,7 +28,7 @@ class ConsyTestCase(TestCase):
             body = json.dumps(body)
         
         if auth:
-            headers = {'Authenticate': 'Token token=%s' % self.get_token()}
+            headers = {'Authenticate': 'Token auth=%s' % self.get_token()}
         else:
             headers = {}
         
@@ -41,7 +45,11 @@ class ConsyTestCase(TestCase):
                 urlargs += '%s=%s&' % (key, val)
             return self.request('GET', path+urlargs, auth=auth)
     
-    def post(self, path, body=None, auth=True):
+    def post(self, path, body=None, args=None, auth=True):
+        if args is not None:
+            if body is not None:
+                raise TypeError, 'args overwrites body in post'
+            body = urlencode(args)
         return self.request('POST', path, body, auth=auth)
     
     def put(self, path, body=None, auth=True):
@@ -51,14 +59,16 @@ class ConsyTestCase(TestCase):
         return self.request('DELETE', path, body, auth=auth)
     
     def get_token(self):
-        response = self.put('/users/testuser/', {
-            u'password': u'password',
-            u'number': u'+15555555555',
-        }, auth=False)
-        assert response.status == 201
-        response = self.get('/token/', {
-            u'password': u'password',
-            u'username': u'testuser',
-        }, auth=False)
-        return response.read()
+        User(**{
+            u'username': 'testuser', 
+            u'password': 'password',
+            u'number': '+15555555555',
+            u'revision': uuid.uuid1().hex,
+            u'created': timestamp(),
+        }).save()
+        token = str(db.objects.session.insert({
+            u'timestamp': timestamp(),
+            u'username': 'testuser',
+        }))
+        return token
 

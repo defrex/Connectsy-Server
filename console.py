@@ -24,5 +24,5 @@ if __name__ == '__main__':
         #print '\n> ',
         repl.push(repl.raw_input('>>> '))
         #repl.push(sys.stdin.readline())
-            
+    
     print 'Bye'

@@ -35,18 +35,18 @@ class InvitesHandler(BaseHandler):
         if not body or (not u'users' in body and not u'contacts' in body):
             raise HTTPError(400)
         
-        if u'users' in body:
-            users = body[u'users']
+        if u'users' in body or u'contacts' in body:
+            users = body.get(u'users', list())
             
             #friends is a special case
             if users == u'friends':
                 #get friends
                 username = self.get_session()[u'username']
                 friends = []
-                friends += [friend[u'to'] for friend in db.objects.friend.find({u'from':
-                        username, u'status': friend_status.ACCEPTED})]
-                friends += [friend[u'from'] for friend in db.objects.friend.find({u'to':
-                        username, u'status': friend_status.ACCEPTED})]
+                friends += [friend[u'to'] for friend in db.objects.friend.find(
+                        {u'from': username, u'status': friend_status.ACCEPTED})]
+                friends += [friend[u'from'] for friend in db.objects.friend.find(
+                        {u'to': username, u'status': friend_status.ACCEPTED})]
                 users = friends 
             
             #prevent people from inviting themselves
@@ -68,15 +68,14 @@ class InvitesHandler(BaseHandler):
                     self.set_status(409)
             
             for user in users:
-                if user[u'username'] is not None:
-                    name = user[u'username']
-                else:
-                    name = user[u'id']
+                Attendant(user=user[u'id'], event=event_id).save()
                 #send the invite notification
+                if user[u'username'] is not None: name = user[u'username']
+                else: name = user[u'id']
+                
                 notifications.send(name, {u'type': 'invite', 
                                           u'event_revision': event[u'revision'],
                                           u'event_id': event[u'id']})
-                Attendant(user=user[u'id'], event=event_id).save()
         
 
 

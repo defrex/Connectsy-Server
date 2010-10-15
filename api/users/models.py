@@ -4,7 +4,6 @@ import uuid
 
 class User(Model):
     __collection__ = 'user'
-    
     __fields__ = {
         u'username': None,
         u'password': None,
