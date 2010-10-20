@@ -1,3 +1,3 @@
-#!/usr/bin/sh
+#!/bin/sh
 
 gunicorn -c gunicorn_config.py
