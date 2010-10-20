@@ -89,7 +89,7 @@ if __name__ == "__main__":
     if settings.DEVELOPMENT:
         runserver(autoreload=True)
     else:
-        from daemon import DaemonContext
-        with DaemonContext():
-            runserver(autoreload=False)
+#        from daemon import DaemonContext
+#        with DaemonContext():
+            runserver()
 
