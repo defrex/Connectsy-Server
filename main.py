@@ -89,7 +89,30 @@ if __name__ == "__main__":
     if settings.DEVELOPMENT:
         runserver(autoreload=True)
     else:
-#        from daemon import DaemonContext
-#        with DaemonContext():
-            runserver()
+        import logging
+        from daemon import Daemon
+        
+        class ConsyDaemon(Daemon):
+            def run(self):
+                runserver()
+        
+        LOG_FILENAME = '/var/log/api.dev.connectsy.log'
+        logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+        d = ConsyDaemon('/var/run/consy.pid')
+        if 'start' == sys.argv[1]:
+            print 'starting'
+            d.start()
+            print 'Connectsy daemon started'
+        elif 'stop' == sys.argv[1]:
+            print 'stopping'
+            d.stop()
+            print 'Connectsy daemon stopped'
+        elif 'restart' == sys.argv[1]:
+            print 'restarting'
+            d.restart()
+            print 'Connectsy daemon restarted'
+        else:
+            print "Unknown command"
+            sys.exit(2)
+        sys.exit(0)
 
