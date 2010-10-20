@@ -75,24 +75,21 @@ def runserver(*args, **kwargs):
         unittest2.TextTestRunner(verbosity=2).run(suite)
     else:
         app = Application(handlers, static_path=settings.static_path)
-        if settings.DEVELOPMENT:
-            # Start Tornado
-            http_server = HTTPServer(app)
-            http_server.bind(settings.PORT)
-            http_server.start(processes)
-            lp = IOLoop.instance()
-            if kwargs.get('autoreload', False): 
-                reload.start(lp)
-            print 'Server running: http://0.0.0.0:%s' % settings.PORT
-            lp.start()
-        else:
-            return app
+        # Start Tornado
+        http_server = HTTPServer(app)
+        http_server.bind(settings.PORT)
+        http_server.start(processes)
+        lp = IOLoop.instance()
+        if kwargs.get('autoreload', False): 
+            reload.start(lp)
+        print 'Server running: http://0.0.0.0:%s' % settings.PORT
+        lp.start()
 
 if __name__ == "__main__":
     if settings.DEVELOPMENT:
         runserver(autoreload=True)
-#    else:
-#        import daemon
-#        with daemon.DaemonContext():
-#            runserver(autoreload=False)
+    else:
+        import daemon
+        with daemon.DaemonContext():
+            runserver(autoreload=False)
 
