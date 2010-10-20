@@ -20,9 +20,8 @@ from tornado.options import define, options, parse_command_line
 from tornado.web import Application
 from tornado import autoreload as reload
 
-def runserver(autoreload=True):
+def runserver(*args, **kwargs):
     # Fire up command line settings
-    # TODO - there's got to be a better command line module.  try optparse?
     define('port', type=int, help='Run on the given port')
     define('db_name', type=str, help='Run using this db name')
     define('runtests', type=bool, help='Run tests')
@@ -68,14 +67,12 @@ def runserver(autoreload=True):
         for c in winter.managers:
             db.objects.get_database().drop_collection(c)
     elif console:
-        import ipdb
-        ipdb.set_trace()
+        import ipdb; ipdb.set_trace()
     elif runtests:
         import unittest2
         from tests import main
         suite = unittest2.defaultTestLoader.loadTestsFromModule(main)
         unittest2.TextTestRunner(verbosity=2).run(suite)
-        autoreload = True
     else:
         # Start Tornado
         http_server = HTTPServer(Application(handlers, 
@@ -83,17 +80,16 @@ def runserver(autoreload=True):
         http_server.bind(settings.PORT)
         http_server.start(processes)
         lp = IOLoop.instance()
-        if autoreload: 
+        if kwargs.get('autoreload', False): 
             reload.start(lp)
         print 'Server running: http://0.0.0.0:%s' % settings.PORT
         lp.start()
 
 if __name__ == "__main__":
-    
     if settings.DEVELOPMENT:
-        runserver()
-    else:
-        import daemon
-        with daemon.DaemonContext():
-            runserver(autoreload=False)
+        runserver(autoreload=True)
+#    else:
+#        import daemon
+#        with daemon.DaemonContext():
+#            runserver(autoreload=False)
 
