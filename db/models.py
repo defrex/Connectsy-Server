@@ -1,6 +1,7 @@
-from copy import copy
 from UserDict import DictMixin
+from copy import copy
 from db import CSCursor
+from pymongo.objectid import ObjectId
 import db
 
 
@@ -37,13 +38,15 @@ class Model(object, DictMixin):
         for key in kwargs:
             if key in self.__data__:
                 self.__data__[key] = kwargs[key]
+        if u'_id' in kwargs and self.__data__[u'id'] is None:
+            self.__data__[u'id'] = str(kwargs[u'_id'])
     
     def save(self, safe=False):
-        if self[u'id'] is not None:
-            id = self.collection().update({u'_id': self[u'id']}, 
-                                          self.__data__, safe=safe)
-        else:
-            id = str(self.collection().insert(self.__data__, safe=safe))
+        obj = copy(self.__data__)
+        if obj[u'id'] is not None:
+            obj[u'_id'] = ObjectId(obj[u'id'])
+            del obj[u'id']
+        id = self.collection().save(obj, safe=safe)
         if id is not None:
             self[u'id'] = str(id)
     

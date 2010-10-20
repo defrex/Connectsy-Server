@@ -30,8 +30,16 @@ class Attendant(Model):
             kwargs[u'user'] = User.get(number=number)[u'id']
         super(Attendant, self).__init__(**kwargs)
     
+    @classmethod
+    def get(cls, q):
+        if u'username' in q:
+            q[u'user'] = User.get(username=q[u'username'])[u'id']
+            del q[u'username']
+        return super(Attendant, cls).get(q)
+    
     def save(self, *args, **kwargs):
         if not u'id' in self:
+            print 'looking for upsert id'
             att = Attendant.get({u'event': self[u'event'], 
                                  u'user': self[u'user']})
             if att is not None:

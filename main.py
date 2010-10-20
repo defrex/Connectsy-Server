@@ -26,7 +26,7 @@ def runserver(autoreload=True):
     define('port', type=int, help='Run on the given port')
     define('db_name', type=str, help='Run using this db name')
     define('runtests', type=bool, help='Run tests')
-    define('allowsms', type=bool, help='Include tests that send SMS messages')
+    define('testsms', type=bool, help='Include tests that send SMS messages')
     define('testserver', type=bool, help='Run test server')
     define('console', type=bool, help='Start interactive console')
     define('clean_db', type=bool, help='Delete all data')
@@ -40,9 +40,10 @@ def runserver(autoreload=True):
     port = options['port'].value()
     if port: settings.PORT = port
     
-    allowsms = options['allowsms'].value()
-    if allowsms: settings.TEST_SMS = allowsms
-    else: settings.TEST_SMS = False
+    if options['testsms'].value():
+        settings.TEST_SMS = True
+    else: 
+        settings.TEST_SMS = False
     
     db_name = options['db_name'].value()
     if db_name: settings.DB_NAME = db_name

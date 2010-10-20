@@ -23,14 +23,11 @@ class ConsyTestCase(TestCase):
     def tearDown(self):
         self.flush_db()
     
-    def request(self, method, path, body=None, auth=True):
+    def request(self, method, path, body=None, headers=dict(), auth=True):
         if type(body) == dict:
             body = json.dumps(body)
         
-        if auth:
-            headers = {'Authenticate': 'Token auth=%s' % self.get_token()}
-        else:
-            headers = {}
+        if auth: headers['Authenticate'] = 'Token auth=%s' % self.get_token()
         
         con = HTTPConnection('localhost:%i' % settings.PORT)
         con.request(method, path, body, headers)
@@ -46,11 +43,14 @@ class ConsyTestCase(TestCase):
             return self.request('GET', path+urlargs, auth=auth)
     
     def post(self, path, body=None, args=None, auth=True):
+        headers = {}
         if args is not None:
             if body is not None:
                 raise TypeError, 'args overwrites body in post'
             body = urlencode(args)
-        return self.request('POST', path, body, auth=auth)
+            headers["Content-type"] = "application/x-www-form-urlencoded"
+        
+        return self.request('POST', path, body, headers=headers, auth=auth)
     
     def put(self, path, body=None, auth=True):
         return self.request('PUT', path, body, auth=auth)

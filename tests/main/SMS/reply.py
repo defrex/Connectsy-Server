@@ -1,6 +1,8 @@
 
-from api import SMS
 from api.SMS.models import SMSRegister
+from api.events.attendance import status
+from api.events.attendance.models import Attendant
+from api.events.comments.models import Comment
 from api.events.models import Event
 from api.users.models import User
 from tests.base_testcase import ConsyTestCase
@@ -25,8 +27,10 @@ class SMSReply(ConsyTestCase):
         })
         event.save()
         
-        smsuser = User(number='+15555555555', display_name='Testy Smoth')
+        smsuser = User(number='+16475555555', display_name='Testy Smoth')
         smsuser.save()
+        
+        Attendant(user=user[u'id'], event=event[u'id']).save()
         
         SMSRegister(contact_number=smsuser[u'number'], 
                     twilio_number=settings.TWILIO_NUMBERS[0], 
@@ -37,11 +41,57 @@ class SMSReply(ConsyTestCase):
         return user, event, smsuser
     
     def test_sms_reply_who(self):
+        if not settings.TEST_SMS: return
+        
         user, event, smsuser = self.prep_for_response_sms()
-        response = self.post('/extra/SMS/', args={'From': smsuser[u'number'],
-                                                  'To': settings.TWILIO_NUMBERS[0],
-                                                  'Body': '#who'})
+        response = self.post('/extras/SMS/', args={'From': smsuser[u'number'],
+                                                   'To': settings.TWILIO_NUMBERS[0],
+                                                   'Body': '#who'})
+        self.assertEqual(response.status, 200)
+    
+    def test_sms_reply_what(self):
+        if not settings.TEST_SMS: return
+        
+        user, event, smsuser = self.prep_for_response_sms()
+        response = self.post('/extras/SMS/', args={'From': smsuser[u'number'],
+                                                   'To': settings.TWILIO_NUMBERS[0],
+                                                   'Body': '#what'})
         self.assertEqual(response.status, 200)
         
+    
+    def test_sms_reply_in(self):
+        if not settings.TEST_SMS: return
         
+        user, event, smsuser = self.prep_for_response_sms()
         
+        att = Attendant.get({u'user': user[u'id'], u'event': event[u'id']})
+        self.assertEqual(att[u'status'], status.INVITED, 'user is invited')
+        
+        response = self.post('/extras/SMS/', args={'From': smsuser[u'number'],
+                                                   'To': settings.TWILIO_NUMBERS[0],
+                                                   'Body': '#in'})
+        self.assertEqual(response.status, 200)
+        
+        att = Attendant.get({u'user': user[u'id'], u'event': event[u'id']})
+        self.assertEqual(att[u'status'], status.ATTENDING, 'user is attending')
+        
+    
+    def test_sms_reply_comment(self):
+        if not settings.TEST_SMS: return
+        
+        user, event, smsuser = self.prep_for_response_sms()
+        
+        comment = 'This is a comment'
+        
+        response = self.post('/extras/SMS/', args={'From': smsuser[u'number'],
+                                                   'To': settings.TWILIO_NUMBERS[0],
+                                                   'Body': comment})
+        self.assertEqual(response.status, 200)
+        
+        db_comment = Comment.get({'event': event[u'id']})
+        
+        self.assertNotEqual(db_comment, None, 'Comment exists')
+        self.assertEqual(comment, db_comment[u'comment'], 'comment body matches')
+        
+    
+

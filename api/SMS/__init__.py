@@ -97,6 +97,5 @@ def new_event(event):
                 })
         except HTTPError, e:
             print e.read()
-            raise
 
 
