@@ -15,11 +15,17 @@ class AttendanceHandler(BaseHandler):
         TODO - verify that the user is invited to this event
         '''
         atts = Attendant.find({u'event': event_id})
-        result = {}
-        result[u'attendants'] = [{'username': k, 'status': v} 
-                                 for k, v in atts.iteritems()]
-        self.write(result)
-        
+        retts = []
+        for att in atts:
+            ret = {'status': att[u'status']}
+            u = att.user()
+            if u.is_registered():
+                ret[u'username'] = u[u'username']
+            else:
+                ret[u'display_name'] = u[u'display_name']
+            retts.append(ret)
+        self.write({u'attendants': retts})
+    
     @require_auth
     def post(self, event_id):
         '''

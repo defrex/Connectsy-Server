@@ -30,6 +30,9 @@ class Attendant(Model):
             kwargs[u'user'] = User.get(number=number)[u'id']
         super(Attendant, self).__init__(**kwargs)
     
+    def user(self):
+        return User.get[self[u'user']]
+    
     @classmethod
     def get(cls, q):
         if u'username' in q:
