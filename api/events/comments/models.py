@@ -16,6 +16,6 @@ class Comment(Model):
 
     def __init__(self, **kwargs):
         if u'username' in kwargs:
-            kwargs[u'user'] = User.get(username=kwargs[u'username'])[u'id']
+            kwargs[u'user'] = User.get({u'username': kwargs[u'username']})[u'id']
         super(Comment, self).__init__(**kwargs)
     
