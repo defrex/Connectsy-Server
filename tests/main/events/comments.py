@@ -47,8 +47,10 @@ class EventComments(ConsyTestCase):
                         'comments')
         self.assertEqual(get['comments'][0]['comment'], comment, 'comment GET '
                          'returned the right comment')
-        self.assertTrue('username' in get['comments'][0], 'comment GET has '
-                        'username')
+        self.assertTrue('username' in get['comments'][0], 
+                        'comment GET has username')
+        self.assertFalse('display_name' in get['comments'][0], 
+                        'comment GET does not have display_name')
         
     def test_sms_comment(self):
         display_name = 'Test User display'
@@ -88,6 +90,8 @@ class EventComments(ConsyTestCase):
         self.assertEqual(len(get['comments']), 1, 
                          'correct number of comments')
         
+        self.assertFalse('username' in get['comments'][0], 
+                        'username field unavailable')
         self.assertTrue('display_name' in get['comments'][0], 
                         'display_name field available')
         self.assertEqual(get['comments'][0]['display_name'], display_name, 

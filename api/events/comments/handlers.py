@@ -27,7 +27,11 @@ class CommentsHandler(BaseHandler):
             user = User.get(c[u'user'])
             ret = c.__data__
             ret[u'username'] = user.__data__.get(u'username', None)
+            if ret[u'username'] is None:
+                del ret[u'username']
             ret[u'display_name'] = user.__data__.get(u'display_name', None)
+            if ret[u'display_name'] is None:
+                del ret[u'display_name']
             ret_coms.append(ret)
         
         self.output({u'comments': ret_coms})
