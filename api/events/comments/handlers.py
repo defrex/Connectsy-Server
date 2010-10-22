@@ -1,5 +1,6 @@
 from api.events.comments.models import Comment
 from api.events.models import Event
+from api.users.models import User
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
 from utils import require_auth
@@ -12,9 +13,7 @@ class CommentsHandler(BaseHandler):
 
     def get(self, event_id):
         '''
-        Gets all comments for a given event.  If the 'since' query parameter
-        is provided, only comments after the specified timestamp will be 
-        retrieved.
+        Gets all comments for a given event.
         '''
         #make sure the event exists
         if not Event.get(event_id): raise HTTPError(404)
@@ -22,9 +21,18 @@ class CommentsHandler(BaseHandler):
         #show them comments!
         comments = Comment.find({u'event': event_id})
         comments.sort(u'timestamp', pymongo.ASCENDING)
-        comments = [c.__data__ for c in comments]
         
-        self.output({u'comments': comments})
+        ret_coms = []
+        for c in comments:
+            user = User.get(c[u'user'])
+            ret = c.__data__
+            if u'username' in user:
+                ret[u'username'] = user[u'username']
+            elif u'display_name' in user:
+                ret[u'display_name'] = user[u'display_name']
+            ret_coms.append(ret)
+        
+        self.output({u'comments': ret_coms})
     
     @require_auth
     def post(self, event_id):
