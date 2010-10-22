@@ -9,11 +9,11 @@ class Event(Model):
         u'where': None,
         u'when': None,
         u'what': None,
-        u'broadcast': None,
         u'posted_from': None,
         u'location': None,
-        u'category': None,
         u'creator': None,
+        u'category': None,
+        u'broadcast': False,
         u'created': timestamp(),
         u'revision': uuid.uuid1().hex,
     }

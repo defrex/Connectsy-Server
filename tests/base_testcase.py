@@ -59,16 +59,23 @@ class ConsyTestCase(TestCase):
         return self.request('DELETE', path, body, auth=auth)
     
     def get_token(self):
-        User(**{
-            u'username': 'testuser', 
-            u'password': 'password',
-            u'number': '+15555555555',
-            u'revision': uuid.uuid1().hex,
-            u'created': timestamp(),
-        }).save()
         token = str(db.objects.session.insert({
             u'timestamp': timestamp(),
-            u'username': 'testuser',
+            u'username': self.get_user()[u'username'],
         }))
         return token
+    
+    def get_user(self):
+        if not hasattr(self, '__user__'):
+            self.__user__ = User(**{
+                u'username': 'testuser', 
+                u'password': 'password',
+                u'number': '+15555555555',
+                u'revision': uuid.uuid1().hex,
+                u'created': timestamp(),
+            })
+            self.__user__.save()
+        return self.__user__
+
+
 
