@@ -63,15 +63,17 @@ class UserHandler(BaseHandler):
     
     @require_auth
     def get(self, username):
-        u = db.objects.user.find_one({u'username': username})
+        u = User.get({u'username': username})
         if u is None: raise HTTPError(404)
+        
+        ret = u.__data__
         
         #get friend status
         cur_user = self.get_session()[u'username']
-        u['friend_status'] = friend_status(cur_user, username)
+        ret['friend_status'] = friend_status(cur_user, username)
         
         #write the user
-        self.output(u)
+        self.output(ret)
 
 
 avatar_dir = os.path.join(os.path.dirname(__file__),
