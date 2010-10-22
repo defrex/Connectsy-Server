@@ -25,7 +25,7 @@ class AttendanceHandler(BaseHandler):
             else:
                 ret[u'display_name'] = user[u'display_name']
             retts.append(ret)
-        self.write({u'attendants': retts})
+        self.output({u'attendants': retts})
     
     @require_auth
     def post(self, event_id):
