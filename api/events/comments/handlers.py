@@ -26,10 +26,8 @@ class CommentsHandler(BaseHandler):
         for c in comments:
             user = User.get(c[u'user'])
             ret = c.__data__
-            if u'username' in user:
-                ret[u'username'] = user[u'username']
-            elif u'display_name' in user:
-                ret[u'display_name'] = user[u'display_name']
+            ret[u'username'] = user.__data__.get(u'username', None)
+            ret[u'display_name'] = user.__data__.get(u'display_name', None)
             ret_coms.append(ret)
         
         self.output({u'comments': ret_coms})
