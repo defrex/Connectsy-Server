@@ -31,7 +31,7 @@ class Attendant(Model):
         super(Attendant, self).__init__(**kwargs)
     
     def user(self):
-        return User.get[self[u'user']]
+        return User.get(self[u'user'])
     
     @classmethod
     def get(cls, q):
