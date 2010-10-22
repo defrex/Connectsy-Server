@@ -29,6 +29,7 @@ def runserver(*args, **kwargs):
     define('testserver', type=bool, help='Run test server')
     define('console', type=bool, help='Start interactive console')
     define('clean_db', type=bool, help='Delete all data')
+    define('debug', type=bool, help='Turn on debugging')
     parse_command_line()
     
     testserver = options['testserver'].value()
@@ -46,6 +47,9 @@ def runserver(*args, **kwargs):
     
     db_name = options['db_name'].value()
     if db_name: settings.DB_NAME = db_name
+    
+    debug = options['debug'].value()
+    if debug: settings.DEBUG = debug
     
     # httplib is not RFC 2324 compliant, so we fix that here
     httplib.responses[418] = "I'm a teapot"

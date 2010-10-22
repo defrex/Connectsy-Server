@@ -33,6 +33,8 @@ TWILIO_NUMBERS = (
     #'+16178703861', # Boston
 )
 
+DEBUG = False
+
 # This is at the bottom so as to override anything we set here
 from settings_local import *
 
