@@ -1,6 +1,7 @@
 
 from api.users.models import User
 from httplib import HTTPConnection
+from random import randint
 from unittest2 import TestCase
 from urllib import urlencode
 from utils import timestamp
@@ -23,26 +24,30 @@ class ConsyTestCase(TestCase):
     def tearDown(self):
         self.flush_db()
     
-    def request(self, method, path, body=None, headers=dict(), auth=True):
+    def request(self, method, path, body=None, headers=dict(), auth=True, 
+                auth_user=None):
         if type(body) == dict:
             body = json.dumps(body)
         
-        if auth: headers['Authenticate'] = 'Token auth=%s' % self.get_token()
+        if auth:
+            auth_user = auth_user or self.get_user() 
+            headers['Authenticate'] = 'Token auth=%s' % self.get_token(user=auth_user)
         
         con = HTTPConnection('localhost:%i' % settings.PORT)
         con.request(method, path, body, headers)
         return con.getresponse()
     
-    def get(self, path, args=None, auth=True):
+    def get(self, path, args=None, auth=True, auth_user=None):
         if args is None:
             return self.request('GET', path, auth=auth)
         else:
             urlargs = '?'
             for key, val in args.iteritems():
                 urlargs += '%s=%s&' % (key, val)
-            return self.request('GET', path+urlargs, auth=auth)
+            return self.request('GET', path+urlargs, auth=auth, 
+                                auth_user=auth_user)
     
-    def post(self, path, body=None, args=None, auth=True):
+    def post(self, path, body=None, args=None, auth=True, auth_user=None):
         headers = {}
         if args is not None:
             if body is not None:
@@ -50,32 +55,39 @@ class ConsyTestCase(TestCase):
             body = urlencode(args)
             headers["Content-type"] = "application/x-www-form-urlencoded"
         
-        return self.request('POST', path, body, headers=headers, auth=auth)
+        return self.request('POST', path, body, headers=headers, auth=auth, 
+                            auth_user=auth_user)
     
-    def put(self, path, body=None, auth=True):
-        return self.request('PUT', path, body, auth=auth)
+    def put(self, path, body=None, auth=True, auth_user=None):
+        return self.request('PUT', path, body, auth=auth, auth_user=auth_user)
     
-    def delete(self, path, body=None, auth=True):
-        return self.request('DELETE', path, body, auth=auth)
+    def delete(self, path, body=None, auth=True, auth_user=None):
+        return self.request('DELETE', path, body, auth=auth, auth_user=auth_user)
     
-    def get_token(self):
+    def get_token(self, user=None):
+        if not user:
+            user = self.get_user()
         token = str(db.objects.session.insert({
             u'timestamp': timestamp(),
-            u'username': self.get_user()[u'username'],
+            u'username': user[u'username'],
         }))
         return token
     
     def get_user(self):
         if not hasattr(self, '__user__'):
-            self.__user__ = User(**{
-                u'username': 'testuser', 
-                u'password': 'password',
-                u'number': '+15555555555',
+            self.__user__ = self.make_user()
+        return self.__user__
+    
+    def make_user(self, username='testuser%i' % randint(1, 100)):
+        u = User(**{
+                u'username': username, 
+                u'password': 'passw0rd',
+                u'number': '+16656656665',
                 u'revision': uuid.uuid1().hex,
                 u'created': timestamp(),
             })
-            self.__user__.save()
-        return self.__user__
+        u.save()
+        return u
 
 
 

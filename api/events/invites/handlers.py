@@ -1,6 +1,7 @@
 
 from api import SMS
 from api.events.attendance.models import Attendant
+from api.events.models import Event
 from api.users.friends import status as friend_status
 from api.users.models import User
 from base_handlers import BaseHandler
@@ -20,7 +21,7 @@ class InvitesHandler(BaseHandler):
     @require_auth
     def post(self, event_id):
         #grab the event from the db
-        event = db.objects.event.find_one(event_id)
+        event = Event.get(event_id)
         
         #make sure the event exists
         if event is None:
@@ -37,7 +38,7 @@ class InvitesHandler(BaseHandler):
         
         if u'users' in body or u'contacts' in body:
             users = body.get(u'users', list())
-            
+            print 'users', users
             #friends is a special case
             if users == u'friends':
                 #get friends
@@ -51,7 +52,7 @@ class InvitesHandler(BaseHandler):
             
             #prevent people from inviting themselves
             if event[u'creator'] in users:
-                del users[event[u'creator']]
+                users.remove(event[u'creator'])
             
             # convert usernames to user objects
             users = list(User.find({u'username': {'$in': users}}))

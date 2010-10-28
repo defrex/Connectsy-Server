@@ -1,8 +1,10 @@
 from api.events.attendance.models import Attendant
+from api.events.models import Event
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
 from utils import require_auth
 import db
+import notifications
 import status
 
 
@@ -34,19 +36,19 @@ class AttendanceHandler(BaseHandler):
         '''
         body = self.body_dict()
         username = self.get_session()[u'username']
-        
+        print 'changing attendance for', username
         #make sure the event exists
-        event = db.objects.event.find_one(event_id)
+        event = Event.get(event_id)
         if not event: raise HTTPError(404)
         
         #try to grab the user's existing attendance status
-        att = Attendant.get({u'event': str(event['_id']),
-                u'username': username})
+        att = Attendant.get({u'event': event[u'id'],
+                             u'username': username})
         
         #if the user isn't invited, we need to error out if broadcast is off
         if att is None:
             if event[u'broadcast']:
-                att = Attendant(username=username, event=event_id)
+                att = Attendant(username=username, event=event[u'id'])
             else:
                 raise HTTPError(403)
         
@@ -57,11 +59,22 @@ class AttendanceHandler(BaseHandler):
         if body.get(u'status') not in valid_statuses:
             raise HTTPError(400)
         
+        notify = False
+        if att[u'status'] == status.INVITED and body[u'status'] == status.ATTENDING:
+            notify = True
+        
         att[u'status'] = body[u'status']
         att.save()
-
-        # Hooray!
-        self.finish()
+        
+        if notify:
+            #Send out the attendant notifications
+            usernames = Attendant.find({u'event': event[u'id'], 
+                                        u'status': status.ATTENDING}).usernames()
+            for uname in usernames:
+                notifications.send(uname, {u'type': 'attendant',
+                                           u'event_revision': event[u'revision'],
+                                           u'event_id': event[u'id'],
+                                           u'attendant': username,})
     
 
 

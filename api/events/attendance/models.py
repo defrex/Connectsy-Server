@@ -1,15 +1,16 @@
 from api.events.attendance import status
 from api.users.models import User
 from db.models import Model, ModelCursor
+from pymongo.objectid import ObjectId
 from utils import timestamp
 
 
 class AttendantCursor(ModelCursor):
     
     def usernames(self):
-        ids = [a[u'id'] for a in self]
-        users = User.find({u'_id': {'$in': ids}})
-        usernames = [u[u'username'] for u in users]
+        ids = [ObjectId(a[u'user']) for a in self]
+        users = User.find({u'_id': {u'$in': ids}})
+        usernames = [u[u'username'] for u in users if u[u'username'] is not None]
         return usernames
 
 
@@ -36,7 +37,7 @@ class Attendant(Model):
     @classmethod
     def get(cls, q):
         if u'username' in q:
-            q[u'user'] = User.get(username=q[u'username'])[u'id']
+            q[u'user'] = User.get({u'username': q[u'username']})[u'id']
             del q[u'username']
         return super(Attendant, cls).get(q)
     

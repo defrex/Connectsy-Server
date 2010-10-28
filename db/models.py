@@ -16,6 +16,9 @@ class ModelCursor(CSCursor):
     def __init__(self, cursor, model_class):
         self.model_class = model_class
     
+    def __len__(self):
+        return self.count()
+    
     def next(self, *args, **kwargs):
         result = super(ModelCursor, self).next(*args, **kwargs)
         return self.model_class(**result)
