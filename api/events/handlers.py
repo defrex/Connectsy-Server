@@ -141,7 +141,7 @@ class EventsHandler(BaseHandler):
                 }
                 
                 return {event: key, user: user};
-            }""" % {'username': user[u'id']})
+            }""" % {'user': user[u'id']})
 
             # Gets a Cursor to {event, user} objects containing all unique
             # events friends or the user are attending.  
