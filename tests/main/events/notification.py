@@ -155,6 +155,57 @@ class EventNotifications(GenericPollNotificationTest):
         self.assertEqual(notification[u'attendant'], to_attend[u'username'], 
                          'event has the corrrect attendant')
         
+    
+    def test_event_notification_attending_creator(self):
+        
+        to_attend = self.make_user(username='attending_user')
+        
+        self.register_for_notifications(user=self.get_user())
+        
+        event = Event(**{
+            u'where': 'test',
+            u'when': timestamp(),
+            u'what': 'test',
+            u'broadcast': False,
+            u'posted_from': [37.422834216666665, -122.08536667833332],
+            u'creator': self.get_user()[u'username'],
+        })
+        event.save()
+        
+        # this attendant will trigger the notification
+        Attendant(**{
+            u'status': status.INVITED,
+            u'timestamp': timestamp(),
+            u'event': event[u'id'],
+            u'user': to_attend[u'id'],
+        }).save()
+        
+        response = self.post('/events/%s/attendants/' % event[u'id'], 
+                             {u'status': status.ATTENDING}, 
+                             auth_user=to_attend)
+        self.assertEqual(response.status, 200, 'attendants POST 200')
+        
+        nots = self.get_new_notifications(user=self.get_user())
+        
+        self.assertEqual(len(nots), 1, 'one new notification')
+        
+        notification = nots[0]
+        
+        self.assertTrue(u'type' in notification, 
+                        'poll response has type')
+        self.assertEqual(notification[u'type'], 'attendant', 
+                         'event has the correct type')
+        
+        self.assertTrue(u'event_revision' in notification, 
+                        'poll response has event rev')
+        self.assertEqual(notification[u'event_revision'], event[u'revision'], 
+                         'event has the corrrect revision')
+        
+        self.assertTrue(u'attendant' in notification, 
+                        'poll response has attendant')
+        self.assertEqual(notification[u'attendant'], to_attend[u'username'], 
+                         'event has the corrrect attendant')
+        
         
         
     

@@ -15,7 +15,7 @@ import uuid
 UNTIL_LIMIT = 1000 * 60 * 60 * 24 * 30 # 30d
 # Events occuring more than SINCE_LIMIT millie seconds before now
 # won't be displayed
-SINCE_LIMIT = 1000 * 60 * 60 * 24 * 10 # 4h
+SINCE_LIMIT = 1000 * 60 * 60 * 24 * 10 # 10d
 
 # Any character matching this regex is stripped from the username
 username_sanitizer = re.compile(r"\W")
@@ -143,7 +143,8 @@ class EventHandler(BaseHandler):
 
         #give the user the attendance info if they asked for it
         if self.request.arguments.get('attendants'):
-            response['attendants'] = db.objects.attendance.find({u'event': event[u'_id']})
+            response['attendants'] = db.objects.attendance.find({u'event': 
+                                                                 event[u'_id']})
 
         self.output(response)
 

@@ -17,7 +17,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_status(status)
         self.set_header("Content-Type", "application/json; charset=UTF-8")
         op = json_encoder(obj)
-        if settings.DEBUG: print op
+        #if settings.DEBUG: print op
         self.write(op)
         self.finish()
     

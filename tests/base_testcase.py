@@ -31,8 +31,8 @@ class ConsyTestCase(TestCase):
                  indexes[collection].iteritems()]
             objects[collection].ensure_index(l)
     
-    def tearDown(self):
-        self.flush_db()
+#    def tearDown(self):
+#        self.flush_db()
     
     def request(self, method, path, body=None, headers=dict(), auth=True, 
                 auth_user=None):
