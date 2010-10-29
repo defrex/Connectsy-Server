@@ -1,12 +1,7 @@
 from api.events.attendance.models import Attendant
-from api.events.models import Event
-from api.users.friends import status as friend_status
-from api.users.friends.friend_utils import get_friends
 from api.users.models import User
 from base_handlers import BaseHandler
-from pprint import pprint
-from pymongo import DESCENDING, GEO2D
-from pymongo.bson import Code
+from pymongo import DESCENDING
 from pymongo.objectid import ObjectId
 from tornado.web import HTTPError
 from utils import timestamp, require_auth
@@ -105,7 +100,6 @@ class EventsHandler(BaseHandler):
             q_sort = u'soon'
 
         # Run the query
-        pprint(q_filter)
         events = db.objects.event.find(q_filter, limit=30)
 
         #perform the required sorting
