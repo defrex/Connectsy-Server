@@ -84,19 +84,15 @@ class AvatarHandler(BaseHandler):
     '''
     def find_file(self, username):
         extensions = ['png', 'jpg', 'gif']
-#        files = map(lambda a: os.path.join(avatar_dir, '%s.%s' % (username, a)),
-#            ['png', 'jpg', 'gif'])
         for extension in extensions:
             if os.path.exists(os.path.join(avatar_dir, '%s.%s' % (username, extension))):
                 return '%s.%s' % (username, extension)
         return None
     
     def get(self, username):
-        try:
-#            abspath = os.path.join(avatar_dir, self.find_file(username))
-            self.redirect('/static/avatars/%s' % self.find_file(username))
-        except AttributeError:
-            raise HTTPError(404)
+        file = self.find_file(username)
+        if file is None: raise HTTPError(404)
+        self.redirect('/static/avatars/%s' % self.find_file(username))
     
     @require_auth
     def put(self, username):

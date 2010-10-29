@@ -14,6 +14,7 @@ class MapsHandler(BaseHandler):
         lat = float(self.get_argument('lat', '43.652527'))
         lng = float(self.get_argument('lng', '-79.381961'))
         events = db.objects.event.find({u'posted_from': {u'$near': [lat, lng]}})
+        events = events.limit(20)
         events = events.sort(u'when', direction=DESCENDING)
         resp = list()
         for e in events:
