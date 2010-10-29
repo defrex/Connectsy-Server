@@ -26,9 +26,9 @@ class Attendant(Model):
     
     def __init__(self, username=None, number=None, **kwargs):
         if username:
-            kwargs[u'user'] = User.get(username=username)[u'id']
+            kwargs[u'user'] = User.get({u'username': username})[u'id']
         elif number:
-            kwargs[u'user'] = User.get(number=number)[u'id']
+            kwargs[u'user'] = User.get({u'number': number})[u'id']
         super(Attendant, self).__init__(**kwargs)
     
     def user(self):
