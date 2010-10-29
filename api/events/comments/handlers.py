@@ -69,7 +69,7 @@ class CommentsHandler(BaseHandler):
         
         #Send out the comment notifications
         usernames = Attendant.find({u'event': event[u'id'], 
-                                    u'status': status.ATTENDING}).usernames()
+                                    u'status': status.ATTENDING}).to_notify()
         for username in usernames:
             notifications.send(username, {u'type': 'comment',
                                           u'event_revision': event[u'revision'],

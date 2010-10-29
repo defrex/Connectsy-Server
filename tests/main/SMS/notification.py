@@ -69,4 +69,42 @@ class SMSNotification(ConsyTestCase):
         self.assertEqual(len(result), 1, 'the correct number of notifications '
                                          'were sent')
         self.assertTrue(result[0], 'the notification was sent correctly')
+    
+    def test_sms_notification_comment(self):
+        if not settings.TEST_SMS: return
         
+        event = Event(**{
+            u'where': 'test',
+            u'when': timestamp(),
+            u'what': 'test',
+            u'broadcast': False,
+            u'posted_from': [37.422834216666665, -122.08536667833332],
+            u'creator': self.get_user()[u'username'],
+        })
+        event.save()
+        
+        number = '+16475551234'
+        name = 'Testy Smoth'
+        
+        reg, out, is_user = SMS.register(event, [{u'number':number, 
+                                                  u'name':name}])
+        self.assertEqual(len(reg), 1, 'correct ammout registered')
+        
+        result = notifications.send(reg[0][u'id'], 
+                                    {u'type': 'comment', 
+                                     u'event_revision': event[u'revision'],
+                                     u'event_id': event[u'id'],
+                                     u'comment': 'my awesome comment',
+                                     u'commenter': self.make_user()})
+        
+        self.assertEqual(len(result), 1, 'the correct number of notifications '
+                                         'were sent')
+        self.assertTrue(result[0], 'the notification was sent correctly')
+        
+    
+
+
+
+
+
+

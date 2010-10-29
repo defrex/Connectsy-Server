@@ -25,6 +25,7 @@ class UserFriending(GenericPollNotificationTest):
         self.assertTrue(user2[u'username'] in users, 'from side friending')
         self.assertTrue(user3[u'username'] in users, 'to side friending')
     
+    
     def test_user_friend_notification(self):
         to_notify = self.make_user(username='noticeuser')
         

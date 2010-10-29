@@ -88,7 +88,11 @@ class ConsyTestCase(TestCase):
             self.__user__ = self.make_user()
         return self.__user__
     
-    def make_user(self, username='testuser%i' % randint(1, 100)):
+    __user_number__ = 0
+    def make_user(self, username=None):
+        if username is None:
+            self.__user_number__ += 1
+            username = 'testuser%i' % self.__user_number__
         u = User(**{
                 u'username': username, 
                 u'password': 'passw0rd',

@@ -12,6 +12,17 @@ class AttendantCursor(ModelCursor):
         users = User.find({u'_id': {u'$in': ids}})
         usernames = [u[u'username'] for u in users if u[u'username'] is not None]
         return usernames
+    
+    def to_notify(self):
+        ids = [ObjectId(a[u'user']) for a in self]
+        users = User.find({u'_id': {u'$in': ids}})
+        ret = list()
+        for u in users:
+            if u[u'username'] is not None:
+                ret.append(u[u'username'])
+            else:
+                ret.append(u[u'id'])
+        return ret
 
 
 class Attendant(Model):
