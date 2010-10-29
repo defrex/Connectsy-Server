@@ -1,4 +1,5 @@
 from api.events.attendance.models import Attendant
+from api.events.models import Event
 from api.users.friends import status as friend_status
 from api.users.friends.friend_utils import get_friends
 from api.users.models import User
@@ -105,8 +106,8 @@ class EventsHandler(BaseHandler):
             friends = user.friends()
             
             # Get a list of events started by friends
-            events_friends_created = [event[u'_id'] for event in 
-                db.objects.event.find({u'creator': {u'$in': friends}})]
+            events_friends_created = [ObjectId(event[u'id']) for event in 
+                     Event.find({u'creator': {u'$in': friends}})]
 
             # Add the user to the friends list, for mapreduce reasons
             friends.append(username)
@@ -116,37 +117,38 @@ class EventsHandler(BaseHandler):
                 u'username': {u'$in': friends}
             }
 
-            # Javascript map function - takes just the event_id and username
+            # Javascript map function - takes just the event_id and user
             # from the already-filtered collection
             map_func = Code("""function() {
-                  emit(this.event, {event: this.event, user: this.username});
+                  emit(this.event, {event: this.event, user: this.user});
             }""")
 
-            # Javascript reduce function.  Returns {event_id, username}, where
-            # username is a random user, or the current user if they were
+            # Javascript reduce function.  Returns {event_id, user}, where
+            # user is a random user, or the current user if they were
             # invited to that event.  Note that this WILL include events
             # that ONLY have the user attending, and not any of his friends.
-            san_username = username_sanitizer.sub('', username)
             reduce_func = Code("""function(key, values) {
-                var username = values[0].user;
+                var user = values[0].user;
             
                 //check to see if the user is in the list of values
                 for (var i=0; i<values.length; i++)
                 {
-                    if (values[i].user == "%(username)s")
+                    if (values[i].user == "%(user)s")
                     {
-                        username = "%(username)s";
+                        user = "%(user)s";
                         break;
                     }
                 }
                 
-                return {event: key, user: username};
-            }""" % {'username': san_username})
+                return {event: key, user: user};
+            }""" % {'username': user[u'id']})
 
             # Gets a Cursor to {event, user} objects containing all unique
             # events friends or the user are attending.  
-            event_list = [a[u'value'] for a in db.objects.attendance.map_reduce(
-                map=map_func, reduce=reduce_func, query=query).find()]
+            event_list = [a[u'value'] for a in 
+                          db.objects.attendance.map_reduce(map=map_func, 
+                                                           reduce=reduce_func, 
+                                                           query=query).find()]
              
             # POTENTIAL OPTIMIZATION BELOW: These can be split in a single
             #   loop rather than two separate map calls, which will loop
@@ -154,11 +156,11 @@ class EventsHandler(BaseHandler):
                 
             # List of events the user is invited to
             events_user_invited = map(lambda a: ObjectId(a[u'event']),
-                filter(lambda a: a[u'user'] == username, event_list))
+                filter(lambda a: a[u'user'] == user[u'id'], event_list))
             
             # List of events that the user's friends are invited to
             events_friends_invited = map(lambda a: ObjectId(a[u'event']),
-                filter(lambda a: a[u'user'] != username, event_list))
+                filter(lambda a: a[u'user'] != user[u'id'], event_list))
             
             # Assemble the query.  Note the use of $or, which basically
             # gives us the union for free.
