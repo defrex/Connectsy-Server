@@ -16,7 +16,7 @@ from api.users.friends.friend_utils import get_friends
 UNTIL_LIMIT = 1000 * 60 * 60 * 24 * 30 # 30d
 # Events occuring more than SINCE_LIMIT millie seconds before now
 # won't be displayed
-SINCE_LIMIT = 1000 * 60 * 60 * 4 # 4h
+SINCE_LIMIT = 1000 * 60 * 60 * 24 * 10 # 4h
 
 # Any character matching this regex is stripped from the username
 username_sanitizer = re.compile(r"\W")
@@ -66,14 +66,14 @@ class EventsHandler(BaseHandler):
         q_sort = self.get_argument(u'sort', u'nearby')
         q_filter = self.get_argument(u'filter', None)
 
+        #prep the geospatial info
+        lat = float(self.get_argument('lat', '43.652527'))
+        lng = float(self.get_argument('lng', '-79.381961'))
+        where = [lat, lng]
+
         #prep filtering
         if q_filter == 'friends':
-        
-            #prep the geospatial info
-            lat = float(self.get_argument('lat', '43.652527'))
-            lng = float(self.get_argument('lng', '-79.381961'))
-            where = [lat, lng]
-        
+            
             # This is madness.
             # THIS IS CONNECTSY!
             # Here's how this mofo works:
@@ -102,7 +102,7 @@ class EventsHandler(BaseHandler):
             friends = get_friends(username)
             
             # Get a list of events started by friends
-            events_friends_created = [event[u'_id'] for event in \
+            events_friends_created = [event[u'_id'] for event in 
                 db.objects.event.find({u'creator': {u'$in': friends}})]
 
             # Add the user to the friends list, for mapreduce reasons
@@ -130,15 +130,15 @@ class EventsHandler(BaseHandler):
                 //check to see if the user is in the list of values
                 for (var i=0; i<values.length; i++)
                 {
-                    if (values[i].user == "%s")
+                    if (values[i].user == "%(username)s")
                     {
-                        username = "%s";
+                        username = "%(username)s";
                         break;
                     }
                 }
                 
                 return {event: key, user: username};
-            }""" % (san_username, san_username)) #yeah, this is lazy...
+            }""" % {'username': san_username})
 
             # Gets a Cursor to {event, user} objects containing all unique
             # events friends or the user are attending.  
@@ -186,7 +186,7 @@ class EventsHandler(BaseHandler):
                 q_filter = {}
                 
             #grab all the events the user's invited to
-            user_invited = [ObjectId(a[u'event']) for a in \
+            user_invited = [ObjectId(a[u'event']) for a in 
                 db.objects.attendance.find({u'username': username})]
                 
             #the query
@@ -205,11 +205,6 @@ class EventsHandler(BaseHandler):
         
         # Handle geo sorting
         if q_sort == u'nearby':
-            #set up location info
-            lat = float(self.get_argument('lat', '43.652527'))
-            lng = float(self.get_argument('lng', '-79.381961'))
-            where = [lat, lng]
-            
             #set the sort
             q_filter.update({u'posted_from': {u'$near': where}})
 
