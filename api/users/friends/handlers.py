@@ -27,7 +27,7 @@ class FriendsHandler(BaseHandler):
         list += [friend[u'from'] for friend in db.objects.friend.find({u'to':
                 username, u'status': status.PENDING if pending else status_type})]
         self.output({u'friends': list})
-        
+    
     @require_auth
     def post(self, username):
         client_user = self.get_session()[u'username']

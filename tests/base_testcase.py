@@ -1,5 +1,9 @@
 
+from api.users.friends import status
+from api.users.friends.models import Friend
 from api.users.models import User
+from db import objects
+from db.index_setup import indexes
 from httplib import HTTPConnection
 from random import randint
 from unittest2 import TestCase
@@ -20,6 +24,12 @@ class ConsyTestCase(TestCase):
     
     def setUp(self):
         self.flush_db()
+        
+        # Set up the indexes
+        for collection in indexes:
+            l = [(field, direction) for field, direction in 
+                 indexes[collection].iteritems()]
+            objects[collection].ensure_index(l)
     
     def tearDown(self):
         self.flush_db()
@@ -88,6 +98,15 @@ class ConsyTestCase(TestCase):
             })
         u.save()
         return u
+    
+    def friend(self, from_user, to_user):
+        f = Friend(**{
+            u'to': to_user[u'username'],
+            u'from': from_user[u'username'],
+            u'status': status.ACCEPTED,
+        })
+        f.save()
+        return f
 
 
 

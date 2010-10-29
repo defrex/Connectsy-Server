@@ -4,6 +4,7 @@ from api.users.friends import status as friend_status
 from api.users.friends.friend_utils import get_friends
 from api.users.models import User
 from base_handlers import BaseHandler
+from pprint import pprint
 from pymongo import DESCENDING, GEO2D
 from pymongo.bson import Code
 from pymongo.objectid import ObjectId
@@ -111,10 +112,14 @@ class EventsHandler(BaseHandler):
 
             # Add the user to the friends list, for mapreduce reasons
             friends.append(username)
-
+            
+            #convert usernames to friend ids, since attendants uses ids
+            friend_ids = [f[u'id'] for f in User.find({u'username': 
+                                                       {u'$in': friends}})]
+            
             # Limit MR'd entries to those from the friends + user
             query = {
-                u'username': {u'$in': friends}
+                u'user': {u'$in': friend_ids}
             }
 
             # Javascript map function - takes just the event_id and user
@@ -149,18 +154,24 @@ class EventsHandler(BaseHandler):
                           db.objects.attendance.map_reduce(map=map_func, 
                                                            reduce=reduce_func, 
                                                            query=query).find()]
-             
+            print 'event_list', event_list
+            check_list = [ObjectId(e[u'event']) for e in event_list]
+            print 'check_list', check_list
+            print 'events', [e for e in Event.find({u'_id': {u'$in': check_list}})]
             # POTENTIAL OPTIMIZATION BELOW: These can be split in a single
             #   loop rather than two separate map calls, which will loop
             #   the whole list twice.
-                
-            # List of events the user is invited to
-            events_user_invited = map(lambda a: ObjectId(a[u'event']),
-                filter(lambda a: a[u'user'] == user[u'id'], event_list))
             
+            # List of events the user is invited to
+            events_user_invited = list()
             # List of events that the user's friends are invited to
-            events_friends_invited = map(lambda a: ObjectId(a[u'event']),
-                filter(lambda a: a[u'user'] != user[u'id'], event_list))
+            events_friends_invited = list()
+            
+            for event in event_list:
+                if event[u'user'] == user[u'id']:
+                    events_user_invited.append(ObjectId(event[u'event']))
+                else:
+                    events_friends_invited.append(ObjectId(event[u'event']))
             
             # Assemble the query.  Note the use of $or, which basically
             # gives us the union for free.
@@ -217,6 +228,7 @@ class EventsHandler(BaseHandler):
             q_sort = u'soon'
 
         # Run the query
+        pprint(q_filter)
         events = db.objects.event.find(q_filter, limit=30)
 
         #perform the required sorting
