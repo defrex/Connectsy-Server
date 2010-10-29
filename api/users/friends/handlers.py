@@ -1,10 +1,11 @@
-from tornado.web import HTTPError
-
-import db
-import status
-import notifications
-from utils import json_encoder, hash, require_auth, timestamp
+from api.users.models import User
 from base_handlers import BaseHandler
+from tornado.web import HTTPError
+from utils import json_encoder, hash, require_auth, timestamp
+import db
+import notifications
+import status
+
 
 class FriendsHandler(BaseHandler):
     
@@ -36,7 +37,7 @@ class FriendsHandler(BaseHandler):
             raise HTTPError(400)
             
         #make sure that this user actually exists
-        if not db.objects.user.find_one({u'username': username}):
+        if not User.get({u'username': username}):
             raise HTTPError(404)
         
         # TODO - make sure the users aren't already friends

@@ -1,15 +1,17 @@
-import re
-import uuid
-from tornado.web import HTTPError
-from pymongo import DESCENDING, GEO2D
-from pymongo.objectid import ObjectId
-from pymongo.bson import Code
-
-import db
-from utils import timestamp, require_auth
-from base_handlers import BaseHandler
+from api.events.attendance.models import Attendant
 from api.users.friends import status as friend_status
 from api.users.friends.friend_utils import get_friends
+from api.users.models import User
+from base_handlers import BaseHandler
+from pymongo import DESCENDING, GEO2D
+from pymongo.bson import Code
+from pymongo.objectid import ObjectId
+from tornado.web import HTTPError
+from utils import timestamp, require_auth
+import db
+import re
+import uuid
+
 
 # Events occuring more than UNTIL_LIMIT milliseconds from now won't
 # be displayed
@@ -60,6 +62,7 @@ class EventsHandler(BaseHandler):
         '''
         #store username for later use
         username = self.get_session()[u'username']
+        user = User.get({u'username': username})
 
         #grab the sorting/filtering types from the args
         #funky names avoid conflict with python builtins
@@ -99,7 +102,7 @@ class EventsHandler(BaseHandler):
             #
             
             # Get the user's friends
-            friends = get_friends(username)
+            friends = user.friends()
             
             # Get a list of events started by friends
             events_friends_created = [event[u'_id'] for event in 
@@ -184,11 +187,11 @@ class EventsHandler(BaseHandler):
                 q_filter = {u'category': q_filter} 
             else:
                 q_filter = {}
-                
+            
             #grab all the events the user's invited to
             user_invited = [ObjectId(a[u'event']) for a in 
-                db.objects.attendance.find({u'username': username})]
-                
+                            Attendant.find({u'user': user[u'id']})]
+            
             #the query
             q_filter.update({u'$or': [
                 # All broadcast events
