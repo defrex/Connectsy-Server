@@ -29,7 +29,14 @@ class User(Model):
                     db.objects.friend.find({u'to': self[u'username'], 
                                             u'status': status.ACCEPTED})]
         return to_side + from_side
-               
+    
+    @classmethod
+    def value_sanitizer(cls, field, value):
+        if field == u'username':
+            return value.lower()
+        else:
+            return value
+    
 
         
 

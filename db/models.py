@@ -39,8 +39,8 @@ class Model(object, DictMixin):
         # all models get id, but shoudn't have to add it themselves
         self.__data__[u'id'] = None
         for key in kwargs:
-            if key in self.__data__:
-                self.__data__[key] = kwargs[key]
+            if key in self.__data__ and kwargs[key] is not None:
+                self.__data__[key] = self.value_sanitizer(key, kwargs[key])
         if u'_id' in kwargs and self.__data__[u'id'] is None:
             self.__data__[u'id'] = str(kwargs[u'_id'])
     
@@ -60,7 +60,27 @@ class Model(object, DictMixin):
         return '%s: %s' % (self.__class__, str(self.__data__))
     
     @classmethod
+    def value_sanitizer(cls, field, value):
+        'overwrite me for value sanitization'
+        return value
+    
+    @classmethod
+    def query_sanitizer(cls, q):
+        if q is None or type(q) in (str, unicode):
+            return q
+        for field, value in q.iteritems():
+            if type(value) is dict:
+                for key, value2 in q[field].iteritems():
+                    if type(value2) is list:
+                        q[field][key] = [cls.value_sanitizer(field, value3) 
+                                         for value3 in value2]
+            else:
+                q[field] = cls.value_sanitizer(field, value)
+        return q
+    
+    @classmethod
     def get(cls, q):
+        q = cls.query_sanitizer(q)
         result = db.objects.__getattr__(cls.__collection__).find_one(q)
         if result is None:
             return None
@@ -69,6 +89,7 @@ class Model(object, DictMixin):
     
     @classmethod
     def find(cls, q):
+        q = cls.query_sanitizer(q)
         cursor = db.objects.__getattr__(cls.__collection__).find(q)
         return cls.__model_cursor__(cursor, cls)
     
@@ -84,7 +105,7 @@ class Model(object, DictMixin):
         return self.__data__[key]
     
     def __setitem__(self, key, value):
-        self.__data__[key] = value
+        self.__data__[key] = self.value_sanitizer(key, value)
 
     def __delitem__(self, key):
         self.__data__[key] = None

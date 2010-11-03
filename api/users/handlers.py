@@ -42,10 +42,10 @@ class UsersHandler(BaseHandler):
 class UserHandler(BaseHandler):
     def put(self, username):
         #make sure we're not overwriting an existing user
-        u = db.objects.user.find_one({u'username': username})
+        u = User.get({u'username': username})
         if u is not None: 
             raise HTTPError(409)
-            
+        
         #set up the password
         password = self.body_dict().get('password')
         if not password: raise HTTPError(403)

@@ -1,4 +1,5 @@
 
+from api.users.models import User
 from tests.base_testcase import ConsyTestCase
 
 class Authentication(ConsyTestCase):
@@ -17,3 +18,24 @@ class Authentication(ConsyTestCase):
                          'returns 200')
         self.assertTrue(len(response.read()) > 0, 'Registered user /token/ GET '
                          'returns a token')
+    
+    
+    def test_registraction_username_validation(self):
+        User(**{
+            u'username': u'test',
+            u'password': u'passw0rd',
+            u'number': u'16475557000',
+        }).save()
+        
+        response = self.put('/users/test/', {
+            u'password': u'passw0rd',
+            u'number': u'+16747005290',
+        }, auth=False)
+        self.assertEqual(response.status, 409, 'cannot reuse usernames')
+        
+        response = self.put('/users/tesT/', {
+            u'password': u'passw0rd',
+            u'number': u'+16747005290',
+        }, auth=False)
+        self.assertEqual(response.status, 409, 'usernames case insensitive')
+    

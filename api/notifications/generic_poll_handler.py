@@ -22,7 +22,6 @@ class GenericPollHandler(BaseHandler):
         
         #output to the client
         notifications = GenericPollNotifications.pop(client_id) or []
-        print 'sending notification to', self.get_session()[u'username'], notifications
         self.output({u'notifications': notifications})
             
         
