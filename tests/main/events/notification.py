@@ -45,6 +45,7 @@ class EventNotifications(GenericPollNotificationTest):
         to_notify = self.make_user(username='noticeuser')
         
         self.register_for_notifications(user=to_notify)
+        self.register_for_notifications()
         
         event = Event(**{
             u'where': 'test',
@@ -95,6 +96,9 @@ class EventNotifications(GenericPollNotificationTest):
         self.assertEqual(notification[u'commenter'], self.get_user()[u'username'], 
                          'event has the correct commenter')
         
+        nots = self.get_new_notifications()
+        self.assertEqual(len(nots), 0, 'no notification for the poster')
+    
     
     def test_event_attending_notification(self):
         
@@ -102,6 +106,7 @@ class EventNotifications(GenericPollNotificationTest):
         to_attend = self.make_user(username='attending_user')
         
         self.register_for_notifications(user=to_notify)
+        self.register_for_notifications(user=to_attend)
         
         event = Event(**{
             u'where': 'test',
@@ -154,6 +159,9 @@ class EventNotifications(GenericPollNotificationTest):
                         'poll response has attendant')
         self.assertEqual(notification[u'attendant'], to_attend[u'username'], 
                          'event has the corrrect attendant')
+        
+        nots = self.get_new_notifications(to_attend)
+        self.assertEqual(len(nots), 0, 'no notification for the poster')
         
     
     def test_event_notification_attending_creator(self):

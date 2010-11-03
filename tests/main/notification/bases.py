@@ -4,14 +4,15 @@ import json
 import uuid
 
 class GenericPollNotificationTest(ConsyTestCase):
+    client_ids = dict()
     
     def register_for_notifications(self, user=None):
         if not user: user = self.get_user()
-        self.client_id = uuid.uuid4().hex
+        self.client_ids[user[u'id']] = uuid.uuid4().hex
         
         response = self.post('/notifications/register/', {
             u'client_type': u'generic_poll',
-            u'client_id': self.client_id,
+            u'client_id': self.client_ids[user[u'id']],
         }, auth_user=user);
         
         self.assertEqual(response.status, 200, 'registered for notifications')
@@ -21,7 +22,8 @@ class GenericPollNotificationTest(ConsyTestCase):
         if not user: user = self.get_user()
         
         response = self.get('/notifications/poll/', 
-                            {u'client_id': self.client_id}, auth_user=user)
+                            {u'client_id': self.client_ids[user[u'id']]}, 
+                            auth_user=user)
         self.assertEqual(response.status, 200, 'notification poll success')
         
         try:

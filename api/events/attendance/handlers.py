@@ -69,10 +69,7 @@ class AttendanceHandler(BaseHandler):
         
         if notify:
             #Send out the attendant notifications
-            usernames = Attendant.find({u'event': event[u'id'], 
-                                        u'status': status.ATTENDING}).usernames()
-            usernames.append(event[u'creator'])
-            print 'usernames', usernames
+            usernames = Attendant.to_notify(event, skip=[username])
             for uname in usernames:
                 notifications.send(uname, {u'type': 'attendant',
                                            u'event_revision': event[u'revision'],

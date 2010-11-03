@@ -19,8 +19,13 @@ import winter
 class ConsyTestCase(TestCase):
     
     def flush_db(self):
+        dbase = db.objects.get_database()
         for c in winter.managers:
-            db.objects.get_database().drop_collection(c)
+            dbase.drop_collection(c)
+            dbase.create_collection(c)
+        # gotta write to disk to prevent inconsistent test failure due to 
+        # missing collections
+        db.objects.connection['admin'].command('fsync')
     
     def setUp(self):
         self.flush_db()
