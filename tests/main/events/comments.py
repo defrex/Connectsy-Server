@@ -96,6 +96,42 @@ class EventComments(ConsyTestCase):
                         'display_name field available')
         self.assertEqual(get['comments'][0]['display_name'], display_name, 
                          'display_name field set correctly')
+    
+    def test_comment_field_created(self):
+        user = User(username='event_creator',
+                    password='password',
+                    number='+16666666666')
+        user.save()
+        
+        event = Event(**{
+            u'where': 'test',
+            u'when': timestamp(),
+            u'what': 'test',
+            u'broadcast': False,
+            u'posted_from': [37.422834216666665, -122.08536667833332],
+            u'creator': user[u'username'],
+        })
+        event.save()
+        
+        comment = 'the test comment'
+        
+        post = self.post('/events/%s/comments/' % event[u'id'], 
+                             {'comment': comment})
+        
+        self.assertEqual(post.status, 200, 'comment POST 200')
+        
+        comment = Comment(user=self.get_user()[u'id'], event=event[u'id'])
+        
+        self.assertTrue(u'created' in comment, 'comment has created')
+        
+        get = self.get('/events/%s/comments/' % event[u'id'])
+        self.assertEqual(get.status, 200, 'got comment')
+        
+        got_comment = json.loads(get.read())['comments'][0]
+        self.assertTrue(u'created' in got_comment, 'comment has created')
+        
+        
+        
         
         
         
