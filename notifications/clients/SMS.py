@@ -32,7 +32,7 @@ class Notifier(notifier.Notifier):
                             'where': event[u'where'],
                             'when': format_date(event[u'when']),
                         }
-            import ipdb; ipdb.set_trace()
+            import pdb; pdb.set_trace()
         elif message[u'type'] == u'comment':
             message = '%(commenter)s commented: %(comment)s' % message
             if len(message) > 160:
