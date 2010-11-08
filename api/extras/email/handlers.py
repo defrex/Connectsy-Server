@@ -4,7 +4,7 @@ from tornado.web import HTTPError
 
 class BetaEmailHandler(BaseHandler):
     
-    def post(self):
+    def get(self):
         #grab the sorting type from the args
         email = self.get_argument('email', None)
         if email is None: raise HTTPError(403)
