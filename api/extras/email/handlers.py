@@ -11,3 +11,5 @@ class BetaEmailHandler(BaseHandler):
         
         with open('/var/log/beta_emails.txt', 'w') as f:
             f.write('%s\n' % email)
+        
+        self.redirect('http://connectsy.com/')
