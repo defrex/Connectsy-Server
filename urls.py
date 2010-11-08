@@ -31,6 +31,6 @@ handlers = [
     (r"/categories/", CategoriesHandler),
     (r"/extras/maps/", MapsHandler),
     (r"/extras/SMS/", SMSHandler),
-    (r"/extras/beta_email/", BetaEmailHandler),
+    #(r"/extras/beta_email/", BetaEmailHandler),
 ]
 
