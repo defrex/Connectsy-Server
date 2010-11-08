@@ -9,7 +9,7 @@ class BetaEmailHandler(BaseHandler):
         email = self.get_argument('email', None)
         if email is None: raise HTTPError(403)
         
-        with open('/var/log/beta_emails.txt', 'w') as f:
+        with open('/var/log/beta_emails.txt', 'a') as f:
             f.write('%s\n' % email)
         
         self.redirect('http://connectsy.com/')
