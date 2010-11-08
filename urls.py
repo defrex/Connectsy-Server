@@ -11,6 +11,7 @@ from api.events.comments.handlers import CommentsHandler
 from api.categories.handlers import CategoriesHandler
 from api.extras.maps.handlers import MapsHandler
 from api.SMS.handlers import SMSHandler
+from api.extras.email import BetaEmailHandler
 
 handlers = [
     (r"/", RootHandler),
@@ -30,5 +31,6 @@ handlers = [
     (r"/categories/", CategoriesHandler),
     (r"/extras/maps/", MapsHandler),
     (r"/extras/SMS/", SMSHandler),
+    (r"/extras/beta_email/", BetaEmailHandler),
 ]
 
