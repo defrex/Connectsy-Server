@@ -12,4 +12,4 @@ class BetaEmailHandler(BaseHandler):
         with open('/var/log/beta_emails.txt', 'a') as f:
             f.write('%s\n' % email)
         
-        self.redirect('http://connectsy.com/')
+        #self.redirect('http://connectsy.com/')
