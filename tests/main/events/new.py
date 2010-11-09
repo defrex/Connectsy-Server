@@ -30,5 +30,23 @@ class EventNew(ConsyTestCase):
         })
         self.assertEqual(response.status, 201, 'new event 201')
         
+        body = response.read()
+        try:
+            body = json.loads(body)
+        except ValueError:
+            self.assertTrue(False, 'response body is json: %s' % body)
+        
+        response = self.get('/events/%s/' % body[u'revision'])
+        self.assertEqual(response.status, 200, 'get event 200')
+        
+        body = response.read()
+        try:
+            body = json.loads(body)
+        except ValueError:
+            self.assertTrue(False, 'response body is json: %s' % body)
+        
+        self.assertEqual(len(body['event']), 6, 
+                         'correct number of fields returned')
+        
         
     

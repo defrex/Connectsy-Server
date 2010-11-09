@@ -56,6 +56,13 @@ class Model(object, DictMixin):
     def collection(self):
         return db.objects.__getattr__(self.__collection__)
     
+    def as_dict(self):
+        d = dict()
+        for k, v in self.__data__.iteritems():
+            if v is not None:
+                d[k] = v
+        return d
+    
     def repr(self):
         return '%s: %s' % (self.__class__, str(self.__data__))
     
