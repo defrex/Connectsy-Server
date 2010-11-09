@@ -1,4 +1,5 @@
 from api.events.attendance.models import Attendant
+from api.events.models import Event
 from api.users.models import User
 from base_handlers import BaseHandler
 from pymongo import DESCENDING
@@ -28,27 +29,28 @@ class EventsHandler(BaseHandler):
         '''
         req_body = self.body_dict()
         response = {}
-        event = {}
+        event = Event()
 
         #grab data from the user-supplied dict
         try:
-            event[u'where'] = req_body[u'where']
-            event[u'when'] = req_body[u'when']
+            event[u'creator'] = self.get_session()[u'username']
             event[u'what'] = req_body[u'what']
             event[u'broadcast'] = req_body[u'broadcast']
-            event[u'posted_from'] = req_body[u'posted_from']
-            event[u'location'] = req_body.get(u'location', '')
-            event[u'category'] = req_body.get(u'category', '') #optional field
+            
+            #optional:
+            event[u'where'] = req_body.get(u'where')
+            event[u'when'] = req_body.get(u'when')
+            event[u'posted_from'] = req_body.get(u'posted_from')
+            event[u'location'] = req_body.get(u'location')
+            event[u'category'] = req_body.get(u'category')
         except KeyError, e:
             self.output({'error': 'MISSING_FIELDS',
                          'field_missing': e[0]}, 400)
         else:
-            event[u'creator'] = self.get_session()[u'username']
-            event[u'created'] = int(timestamp())
-            event[u'revision'] = uuid.uuid1().hex
+            event.save()
 
             response[u'revision'] = event[u'revision']
-            response[u'id'] = str(db.objects.event.insert(event))
+            response[u'id'] = event[u'id']
             
             self.output(response, 201)
 

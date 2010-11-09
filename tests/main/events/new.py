@@ -9,7 +9,6 @@ class EventNew(ConsyTestCase):
         response = self.post('/events/', {
             u'where': 'TestCase',
             u'when': timestamp(),
-            u'what': 'testing validation',
             u'broadcast': False,
         })
         self.assertEqual(response.status, 400, 'new event 400')
@@ -22,5 +21,14 @@ class EventNew(ConsyTestCase):
         
         self.assertTrue('error' in body)
         self.assertEqual(body['error'], 'MISSING_FIELDS')
+        
+    
+    def test_event_new(self):
+        response = self.post('/events/', {
+            u'broadcast': True,
+            u'what': 'Testin event creation',
+        })
+        self.assertEqual(response.status, 201, 'new event 201')
+        
         
     
