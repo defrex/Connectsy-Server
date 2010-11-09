@@ -15,5 +15,9 @@ class Event(Model):
         u'category': None,
         u'broadcast': False,
         u'created': timestamp(),
-        u'revision': uuid.uuid1().hex,
+        u'revision': None,
     }
+    
+    def save(self, *args, **kwargs):
+        self[u'revision'] = uuid.uuid1().hex
+        super(Event, self).save(*args, **kwargs)
