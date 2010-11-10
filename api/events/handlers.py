@@ -99,9 +99,11 @@ class EventsHandler(BaseHandler):
             if category is not None:
                 q_filter[u'category'] = category 
         
-        # Limit to nearby times
-        q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
-                                   u'$gt': timestamp() - SINCE_LIMIT}})
+        # This can be uncommented when mongogb gets suppor tfor $and
+#        # Limit to nearby times
+#        q_filter.update({'$or': [{u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
+#                                            u'$gt': timestamp() - SINCE_LIMIT}},
+#                                 {u'when': None}]})
         
         # Handle geo sorting
         if q_sort == u'nearby':
