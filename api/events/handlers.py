@@ -133,15 +133,15 @@ class EventHandler(BaseHandler):
         '''
         Deletes an event, if the current user it that event's owner.
 
-        TODO - enforce user restrictions
-        TODO - notifications
         TODO - remove associated attendance
         '''
-        obj = db.objects.event.find_one({u'revision': revision})
-        if obj is None:
+        event = Event.get({u'revision': revision})
+        if event is None: 
             raise HTTPError(404)
+        if event[u'creator'] != self.get_user()[u'username']: 
+            raise HTTPError(403)
 
-        db.objects.event.remove(obj[u'_id'], safe=True)
+        db.objects.event.remove(event[u'id'], safe=True)
         self.finish()
 
     @require_auth
@@ -153,12 +153,15 @@ class EventHandler(BaseHandler):
         event = Event.get({u'revision': revision})
         if event is None: raise HTTPError(404)
         
-        response = {'event': event.as_dict()}
+        if not event.user_can_access(self.get_user()):
+            raise HTTPError(401)
+        
+        response = {'event': event.serializable()}
 
         #give the user the attendance info if they asked for it
         if self.request.arguments.get('attendants'):
-            response['attendants'] = [a.as_dict() for a in 
-                                      Attendant.find({u'event': event[u'id']})]
+            response['attendants'] = Attendant.find({u'event': 
+                                         event[u'id']}).serializable(name=True)
 
         self.output(response)
 

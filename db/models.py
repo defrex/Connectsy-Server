@@ -22,6 +22,9 @@ class ModelCursor(CSCursor):
     def next(self, *args, **kwargs):
         result = super(ModelCursor, self).next(*args, **kwargs)
         return self.model_class(**result)
+    
+    def serializable(self):
+        return [v.serializable() for v in self]
 
 
 class Model(object, DictMixin):
@@ -56,7 +59,7 @@ class Model(object, DictMixin):
     def collection(self):
         return db.objects.__getattr__(self.__collection__)
     
-    def as_dict(self):
+    def serializable(self):
         d = dict()
         for k, v in self.__data__.iteritems():
             if v is not None:
@@ -83,6 +86,8 @@ class Model(object, DictMixin):
                                          for value3 in value2]
             else:
                 q[field] = cls.value_sanitizer(field, value)
+        if u'id' in q:
+            q[u'_id'] = ObjectId(q.pop(u'id'))
         return q
     
     @classmethod

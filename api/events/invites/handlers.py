@@ -38,7 +38,6 @@ class InvitesHandler(BaseHandler):
         
         if u'users' in body or u'contacts' in body:
             users = body.get(u'users', list())
-            print 'users', users
             #friends is a special case
             if users == u'friends':
                 #get friends

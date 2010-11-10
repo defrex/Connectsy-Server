@@ -13,6 +13,9 @@ class AttendantCursor(ModelCursor):
         usernames = [u[u'username'] for u in users if u[u'username'] is not None]
         return usernames
 
+    def serializable(self, name=False):
+        return [v.serializable(name=name) for v in self]
+
 class Attendant(Model):
     __collection__ = 'attendance'
     __model_cursor__ = AttendantCursor
@@ -33,10 +36,10 @@ class Attendant(Model):
     def user(self):
         return User.get(self[u'user'])
     
-    def to_dict(self, name=False):
-        d = super(Attendant, self).to_dict()
+    def serializable(self, name=False):
+        d = super(Attendant, self).serializable()
         if name:
-            user = User.get({u'id': self[u'id']})
+            user = User.get({u'id': self[u'user']})
             if user[u'username'] is not None:
                 d[u'username'] = user[u'username']
             elif user[u'display_name'] is not None:

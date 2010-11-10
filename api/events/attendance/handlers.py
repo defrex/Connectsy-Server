@@ -4,7 +4,6 @@ from api.users.models import User
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
 from utils import require_auth
-import db
 import notifications
 import status
 
@@ -12,13 +11,14 @@ import status
 class AttendanceHandler(BaseHandler):
     @require_auth
     def get(self, event_id):
-        '''
-        Gets a list of changes, optionally up to a certain point
+        event = Event.get({u'id': event_id})
+        if not event: raise HTTPError(404)
         
-        TODO - verify that the user is invited to this event
-        '''
-        self.output({u'attendants': [att.as_dict(name=True) for att in 
-                                     Attendant.find({u'event': event_id})]})
+        if not event.user_can_access(self.get_user()):
+            raise HTTPError(401)
+        
+        self.output({u'attendants': 
+                     Attendant.find({u'event': event_id}).serializable()})
     
     @require_auth
     def post(self, event_id):

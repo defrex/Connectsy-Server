@@ -1,4 +1,5 @@
 
+from api.events.attendance.models import Attendant
 from db.models import Model
 from utils import timestamp
 import uuid
@@ -21,3 +22,13 @@ class Event(Model):
     def save(self, *args, **kwargs):
         self[u'revision'] = uuid.uuid1().hex
         super(Event, self).save(*args, **kwargs)
+
+    def user_can_access(self, user):
+        if user[u'username'] == self[u'creator']:
+            return True
+        if not self[u'broadcast']:
+            att = Attendant.get({u'event': self[u'id'], 
+                                 u'user': user[u'id']})
+            return att is not None
+        return True
+    

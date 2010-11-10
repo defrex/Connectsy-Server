@@ -86,7 +86,7 @@ class EventLists(ConsyTestCase):
             u'what': 'user2 created, broadcast',
             u'broadcast': True,
             u'creator': self.get_user()[u'username'],
-            u'created': t2,
+            u'created': t3,
         })
         e2.save()
         
@@ -95,7 +95,7 @@ class EventLists(ConsyTestCase):
             u'what': 'user2 created, broadcast',
             u'broadcast': True,
             u'creator': self.get_user()[u'username'],
-            u'created': t3,
+            u'created': t2,
         })
         e3.save()
         
@@ -116,8 +116,8 @@ class EventLists(ConsyTestCase):
         self.assertEqual(len(events), 4, 'correct number of events returned')
         
         self.assertEqual(events[0], e1[u'revision'], 'event 1 when correct')
-        self.assertEqual(events[1], e2[u'revision'], 'event 2 when correct')
-        self.assertEqual(events[2], e3[u'revision'], 'event 3 when correct')
+        self.assertEqual(events[1], e3[u'revision'], 'event 3 when correct')
+        self.assertEqual(events[2], e2[u'revision'], 'event 2 when correct')
         self.assertEqual(events[3], e4[u'revision'], 'event 4 when correct')
 
 
