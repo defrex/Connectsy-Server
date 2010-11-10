@@ -111,7 +111,6 @@ class EventsHandler(BaseHandler):
             q_sort = u'soon'
 
         # Run the query
-        print q_filter
         events = db.objects.event.find(q_filter, limit=30)
 
         #perform the required sorting
@@ -119,6 +118,7 @@ class EventsHandler(BaseHandler):
             events.sort(u'created', direction=DESCENDING)
         elif q_sort == u'soon':
             events.sort(u'when', direction=DESCENDING)
+            events.sort(u'created', direction=DESCENDING)
 
         #output the results
         result = {u'events': [e[u'revision'] for e in events]}

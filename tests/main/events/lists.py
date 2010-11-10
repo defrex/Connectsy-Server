@@ -68,7 +68,58 @@ class EventLists(ConsyTestCase):
         self.assertTrue(event1[u'revision'] in events, 'event 1 returned')
         self.assertTrue(event2[u'revision'] in events, 'event 2 returned')
     
-
+    def test_event_list_sort(self):
+        t1 = timestamp()
+        t2 = timestamp()
+        t3 = timestamp()
+        
+        e1 = Event(**{
+            u'when': t1,
+            u'what': 'user2 created, broadcast',
+            u'broadcast': True,
+            u'creator': self.get_user()[u'username'],
+            u'created': t1,
+        })
+        e1.save()
+        
+        e2 = Event(**{
+            u'when': t2,
+            u'what': 'user2 created, broadcast',
+            u'broadcast': True,
+            u'creator': self.get_user()[u'username'],
+            u'created': t2,
+        })
+        e2.save()
+        
+        e3 = Event(**{
+            u'when': t2,
+            u'what': 'user2 created, broadcast',
+            u'broadcast': True,
+            u'creator': self.get_user()[u'username'],
+            u'created': t3,
+        })
+        e3.save()
+        
+        e4 = Event(**{
+            u'when': t3,
+            u'what': 'user2 created, broadcast',
+            u'broadcast': True,
+            u'creator': self.get_user()[u'username'],
+            u'created': t1,
+        })
+        e4.save()
+        
+        response = self.get('/events/?sort=soon&filter=creator&'
+                            'username=%s' % self.get_user()[u'username'])
+        self.assertEqual(response.status, 200, 'response OK')
+        
+        events = json.loads(response.read())[u'events']
+        self.assertEqual(len(events), 4, 'correct number of events returned')
+        
+        self.assertEqual(events[0], e1[u'revision'], 'event 1 when correct')
+        self.assertEqual(events[1], e2[u'revision'], 'event 2 when correct')
+        self.assertEqual(events[2], e3[u'revision'], 'event 3 when correct')
+        self.assertEqual(events[3], e4[u'revision'], 'event 4 when correct')
 
 
 
