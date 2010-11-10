@@ -29,7 +29,6 @@ class EventLists(ConsyTestCase):
         
         event2 = Event(**{
             u'where': 'test',
-            u'when': timestamp(),
             u'what': 'user3 created',
             u'broadcast': False,
             u'creator': user3[u'username'],
@@ -40,7 +39,6 @@ class EventLists(ConsyTestCase):
         
         event3 = Event(**{
             u'where': 'test',
-            u'when': timestamp(),
             u'what': 'user2 created, broadcast',
             u'broadcast': True,
             u'posted_from': [37.422834216666665, -122.08536667833332],
@@ -67,6 +65,7 @@ class EventLists(ConsyTestCase):
         self.assertEqual(len(events), 3, 'correct number of events returned')
         self.assertTrue(event1[u'revision'] in events, 'event 1 returned')
         self.assertTrue(event2[u'revision'] in events, 'event 2 returned')
+        self.assertTrue(event3[u'revision'] in events, 'event 3 returned')
     
     def test_event_list_sort(self):
         t1 = timestamp()
