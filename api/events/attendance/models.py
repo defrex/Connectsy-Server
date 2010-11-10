@@ -33,6 +33,20 @@ class Attendant(Model):
     def user(self):
         return User.get(self[u'user'])
     
+    def to_dict(self, username=False):
+        d = super(Attendant, self).to_dict()
+        d[u'username'] = User.get({u'id': self[u'id']})[u'username']
+        return d
+    
+    def save(self, *args, **kwargs):
+        if not u'id' in self:
+            print 'looking for upsert id'
+            att = Attendant.get({u'event': self[u'event'], 
+                                 u'user': self[u'user']})
+            if att is not None:
+                self[u'id'] = att[u'id']
+        super(Attendant, self).save(*args, **kwargs)
+    
     @classmethod
     def get(cls, q):
         if u'username' in q:
@@ -53,15 +67,6 @@ class Attendant(Model):
                 ret.append(u[u'id'])
         ret = [u for u in ret if u not in skip]
         return ret
-    
-    def save(self, *args, **kwargs):
-        if not u'id' in self:
-            print 'looking for upsert id'
-            att = Attendant.get({u'event': self[u'event'], 
-                                 u'user': self[u'user']})
-            if att is not None:
-                self[u'id'] = att[u'id']
-        super(Attendant, self).save(*args, **kwargs)
 
     
 
