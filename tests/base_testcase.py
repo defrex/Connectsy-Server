@@ -5,7 +5,6 @@ from api.users.models import User
 from db import objects
 from db.index_setup import indexes
 from httplib import HTTPConnection
-from random import randint
 from unittest2 import TestCase
 from urllib import urlencode
 from utils import timestamp
