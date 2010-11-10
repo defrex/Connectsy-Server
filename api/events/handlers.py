@@ -66,23 +66,32 @@ class EventsHandler(BaseHandler):
 
         #grab the sorting/filtering types from the args
         #funky names avoid conflict with python builtins
-        q_sort = self.get_argument(u'sort', u'nearby')
-        q_filter = self.get_argument(u'filter', None)
+        q_sort = self.get_argument(u'sort', u'soon')
+        q_filter = self.get_argument(u'filter', u'invited')
         category = self.get_argument(u'category', None)
         
         if not q_filter in (u'invited', u'creator', u'public'):
             raise HTTPError(404)
 
         #prep the geospatial info
-        lat = float(self.get_argument('lat', '43.652527'))
-        lng = float(self.get_argument('lng', '-79.381961'))
-        where = [lat, lng]
+        lat = self.get_argument('lat', None)
+        lng = self.get_argument('lng', None)
+        if lat is not None and lng is not None:
+            where = [float(lat), float(lng)]
+        elif q_sort == u'nearby':
+            raise HTTPError(403)
 
         #prep filtering
         if q_filter == 'invited':
             event_ids = [ObjectId(att[u'event']) for att in 
                          Attendant.find({u'user': user[u'id']})]
-            q_filter = {u'_id': {'$in': event_ids}}
+            q_filter = {'$or': [
+                            {u'_id': {'$in': event_ids}},
+                            {
+                                u'broadcast': True, 
+                                u'creator': {'$in': user.friends()}
+                            }
+                        ]}
         elif q_filter == u'creator':
             q_filter = {u'creator': self.get_argument(u'username', username)}
         elif q_filter == u'public':
@@ -92,17 +101,17 @@ class EventsHandler(BaseHandler):
         
         # Limit to nearby times
         q_filter.update({u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
-            u'$gt': timestamp() - SINCE_LIMIT}})
+                                   u'$gt': timestamp() - SINCE_LIMIT}})
         
         # Handle geo sorting
         if q_sort == u'nearby':
             #set the sort
             q_filter.update({u'posted_from': {u'$near': where}})
-
             #use 'soon' as a secondary sort
             q_sort = u'soon'
 
         # Run the query
+        print q_filter
         events = db.objects.event.find(q_filter, limit=30)
 
         #perform the required sorting

@@ -32,7 +32,6 @@ class EventLists(ConsyTestCase):
             u'when': timestamp(),
             u'what': 'user3 created',
             u'broadcast': False,
-            u'posted_from': [37.422834216666665, -122.08536667833332],
             u'creator': user3[u'username'],
         })
         event2.save()
@@ -49,6 +48,15 @@ class EventLists(ConsyTestCase):
         })
         event3.save()
         
+        event4 = Event(**{
+            u'where': 'test',
+            u'when': timestamp(),
+            u'what': 'user3 created',
+            u'broadcast': False,
+            u'creator': user3[u'username'],
+        })
+        event4.save()
+        
         response = self.get('/events/?filter=invited&'
                             'lat=37.42283421666234&'
                             'lng=-122.0853666783334&')
@@ -56,7 +64,7 @@ class EventLists(ConsyTestCase):
         
         events = json.loads(response.read())[u'events']
         
-        self.assertEqual(len(events), 2, 'correct number of events returned')
+        self.assertEqual(len(events), 3, 'correct number of events returned')
         self.assertTrue(event1[u'revision'] in events, 'event 1 returned')
         self.assertTrue(event2[u'revision'] in events, 'event 2 returned')
     
