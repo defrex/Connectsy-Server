@@ -24,26 +24,38 @@ class Notifier(notifier.Notifier):
         account = twilio.Account(settings.TWILIO_ACCOUNT_SID,
                                  settings.TWILIO_AUTH_TOKEN)
         
+        texts = list()
+        
         if message[u'type'] == u'invite':
-            message = ('%(username)s invited you to %(where)s %(when)s. '
-                       'Reply to comment, include #in to join, #what or '
-                       '#who for more info. -Connectsy') % {
-                            'username': event[u'creator'],
-                            'where': event[u'where'],
-                            'when': format_date(event[u'when']),
-                        }
-            #import pdb; pdb.set_trace()
+            texts.append('%(username)s: %(what)s' % 
+                         {'username': event[u'creator'], 
+                          'what': event[u'what']})
+            
+            t2 = ('%s just shared a plan with you on '
+                  'Connectsy.' % event[u'creator'])
+            if event[u'where'] is not None:
+                t2 += 'Where: %s' % event[u'where']
+                if event[u'when'] is not None:
+                    t2 += ", "
+                else:
+                    t2 += ". "
+            if event[u'when'] is not None:
+                t2 += 'When: %s. ' % format_date(event[u'when'])
+            t2 += 'Reply to comment, include #in to join.'
+            texts.append(t2)
+            
         elif message[u'type'] == u'comment':
-            message = '%(commenter)s commented: %(comment)s' % message
-            if len(message) > 160:
-                message = message[:157]+"..."
+            texts.append('%(commenter)s commented: %(comment)s' % message)
+            if len(texts[-1]) > 160:
+                texts[-1] = texts[-1][:157]+"..."
         
         try:
-            account.request(SMS_OUTPUT_URL, 'POST', {
-                    'To': smsee[u'contact_number'],
-                    'Body': message,
-                    'From': smsee[u'twilio_number'],
-                })
+            for text in texts:
+                account.request(SMS_OUTPUT_URL, 'POST', {
+                        'To': smsee[u'contact_number'],
+                        'Body': text,
+                        'From': smsee[u'twilio_number'],
+                    })
             return True
         except HTTPError, e:
             print e.read()
