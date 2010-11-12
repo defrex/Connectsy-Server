@@ -1,6 +1,6 @@
 
 from api.SMS.models import SMSRegister
-from api.SMS.sms_utils import format_date
+from api.SMS.sms_utils import format_date, normalize_phone_number
 from api.users.models import User
 from datetime import datetime
 from notifications.models import NotificationRegister
@@ -36,6 +36,7 @@ def register(event, contacts):
     has_username = list()
     
     for contact in contacts:
+        contact[u'number'] = contact[u'number']
         user = User.get({u'number': contact[u'number']})
         if user is None:
             user = User(number=contact[u'number'], 
@@ -58,18 +59,19 @@ def register(event, contacts):
             continue
         
         registered.append(user)
-        SMSRegister(contact_number=contact[u'number'], 
+        r = SMSRegister(contact_number=contact[u'number'], 
                     twilio_number=potential_numbers[0], 
                     event=event[u'id'], 
                     expires=event[u'when'],
-                    user=user[u'id']).save()
+                    user=user[u'id'])
+        r.save()
         
         #register with the notifications system as well
         note = {
             u'user': user[u'id'],
             u'timestamp': timestamp(),
             u'client_type': 'SMS',
-            u'client_id': contact[u'number'],
+            u'client_id': r[u'contact_number'],
         }
         NotificationRegister(**note).save()
     

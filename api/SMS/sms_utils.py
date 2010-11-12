@@ -1,7 +1,8 @@
 
 from datetime import datetime, timedelta
-
 from utils import from_timestamp
+import re
+
 
 def format_date(raw_date):
     raw_date = int(raw_date)
@@ -22,3 +23,9 @@ def format_date(raw_date):
     else:
         format = '%b. %d, %Y at %I:%M%p'
     return date.strftime(format)
+
+def normalize_phone_number(number):
+    number = re.sub('[^\d]', '', number)
+    if len(number) == 10:
+        number = '1%s' % number
+    return number

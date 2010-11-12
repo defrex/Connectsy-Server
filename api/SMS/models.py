@@ -1,3 +1,4 @@
+from api.SMS.sms_utils import normalize_phone_number
 from db.models import Model
 from utils import timestamp
 import db
@@ -19,6 +20,11 @@ class SMSRegister(Model):
         }
         db.objects.sms_reg.update(find, self.__data__, upsert=True)
 
+    @classmethod
+    def value_sanitizer(cls, field, value):
+        if field == u'contact_number':
+            value = normalize_phone_number(value)
+        return value
     
 
 

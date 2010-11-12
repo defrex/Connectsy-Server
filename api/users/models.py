@@ -1,3 +1,4 @@
+from api.SMS.sms_utils import normalize_phone_number
 from api.users.friends import status
 from db.models import Model
 from utils import timestamp
@@ -34,10 +35,10 @@ class User(Model):
     def value_sanitizer(cls, field, value):
         if field == u'username':
             return value.lower()
+        elif field == u'contact_number':
+            return normalize_phone_number(value)
         else:
             return value
     
-
-        
 
 
