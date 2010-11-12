@@ -32,10 +32,10 @@ class Notifier(notifier.Notifier):
                           'what': event[u'what']})
             
             t2 = ('%s just shared a plan with you on '
-                  'Connectsy.' % event[u'creator'])
+                  'Connectsy. ' % event[u'creator'])
             if event[u'where'] is not None:
                 t2 += 'Where: %s' % event[u'where']
-                if event[u'when'] is not None:
+                if event[u'when'] is not None and event[u'when'] != 0:
                     t2 += ", "
                 else:
                     t2 += ". "
