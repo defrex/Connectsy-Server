@@ -25,7 +25,7 @@ class SMSHandler(BaseHandler):
         except KeyError, e:
             print e
             raise HTTPError(400)
-        
+        print contact_number, twilio_number, body
         sms_reg = SMSRegister.get({u'contact_number': contact_number,
                                    u'twilio_number': twilio_number})
         if sms_reg is None: raise HTTPError(404)
