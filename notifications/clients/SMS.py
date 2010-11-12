@@ -39,7 +39,7 @@ class Notifier(notifier.Notifier):
                     t2 += ", "
                 else:
                     t2 += ". "
-            if event[u'when'] is not None:
+            if event[u'when'] is not None and event[u'when'] != 0:
                 t2 += 'When: %s. ' % format_date(event[u'when'])
             t2 += 'Reply to comment, include #in to join.'
             texts.append(t2)
