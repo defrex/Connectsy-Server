@@ -16,10 +16,8 @@ class AttendanceHandler(BaseHandler):
         
         if not event.user_can_access(self.get_user()):
             raise HTTPError(401)
-        resp = {u'attendants': 
-                     Attendant.find({u'event': event_id}).serializable(name=True)}
-        print 'att get resp', resp
-        self.output(resp)
+        self.output({u'attendants': Attendant.find({u'event': 
+                                        event_id}).serializable(name=True)})
     
     @require_auth
     def post(self, event_id):

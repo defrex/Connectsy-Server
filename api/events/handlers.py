@@ -164,7 +164,6 @@ class EventHandler(BaseHandler):
         if self.request.arguments.get('attendants'):
             response['attendants'] = Attendant.find({u'event': 
                                          event[u'id']}).serializable(name=True)
-        print 'event get resp', response
         self.output(response)
 
 
