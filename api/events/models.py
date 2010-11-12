@@ -1,7 +1,10 @@
 
+from api import SMS
 from api.events.attendance.models import Attendant
+from api.users.models import User
 from db.models import Model
 from utils import timestamp
+import notifications
 import uuid
 
 class Event(Model):
@@ -31,4 +34,34 @@ class Event(Model):
                                  u'user': user[u'id']})
             return att is not None
         return True
+    
+    def invite(self, usernames=None, contacts=None):
+        if usernames is not None:
+            #prevent people from inviting themselves
+            if self[u'creator'] in usernames:
+                usernames.remove(self[u'creator'])
+            # convert usernames to user objects
+            users = list(User.find({u'username': {'$in': usernames}}))
+        else:
+            users = list()
+        ret = None
+        if contacts is not None:
+            registered, out_of_numbers, has_username = SMS.register(self, 
+                                                                    contacts)
+            users += has_username
+            users += registered
+            if len(out_of_numbers) > 0:
+                ret = out_of_numbers
+        
+        for user in users:
+            Attendant(user=user[u'id'], event=self[u'id']).save()
+            #send the invite notification
+            if user[u'username'] is not None: name = user[u'username']
+            else: name = user[u'id']
+            
+            notifications.send(name, {u'type': 'invite', 
+                                      u'event_revision': self[u'revision'],
+                                      u'event_id': self[u'id']})
+        return ret
+        
     

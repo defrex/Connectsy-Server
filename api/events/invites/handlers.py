@@ -1,15 +1,9 @@
 
-from api import SMS
-from api.events.attendance.models import Attendant
 from api.events.models import Event
-from api.users.friends import status as friend_status
-from api.users.models import User
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
 from utils import require_auth
-import db
 import json
-import notifications
 
 
 
@@ -37,38 +31,18 @@ class InvitesHandler(BaseHandler):
             raise HTTPError(400)
         
         if u'users' in body or u'contacts' in body:
-            users = body.get(u'users', list())
+            users = body.get(u'users')
             #friends is a special case
             if users == u'friends':
                 users = self.get_user().friends()
             
-            #prevent people from inviting themselves
-            if event[u'creator'] in users:
-                users.remove(event[u'creator'])
-            
-            # convert usernames to user objects
-            users = list(User.find({u'username': {'$in': users}}))
-            
-            if u'contacts' in body:
-                registered, out_of_numbers, has_username = SMS.register(event, 
-                                                            body[u'contacts'])
-                users += has_username
-                users += registered
-                if len(out_of_numbers) > 0:
-                    self.write(json.dumps({'error': 'OUT_OF_NUMBERS',
-                                           'contacts': out_of_numbers,
-                                           'event_revision': event[u'revision']}))
-                    self.set_status(409)
-            
-            for user in users:
-                Attendant(user=user[u'id'], event=event_id).save()
-                #send the invite notification
-                if user[u'username'] is not None: name = user[u'username']
-                else: name = user[u'id']
-                
-                notifications.send(name, {u'type': 'invite', 
-                                          u'event_revision': event[u'revision'],
-                                          u'event_id': event[u'id']})
+            out_of_numbers = event.invite(usernames=users, 
+                                          contacts=body.get(u'contacts'))
+            if out_of_numbers is not None:
+                self.write(json.dumps({'error': 'OUT_OF_NUMBERS',
+                                       'contacts': out_of_numbers,
+                                       'event_revision': event[u'revision']}))
+                self.set_status(409)
         
 
 

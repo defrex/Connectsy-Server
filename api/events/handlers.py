@@ -48,14 +48,24 @@ class EventsHandler(BaseHandler):
                          'field_missing': e[0]}, 400)
         else:
             event.save()
+            resp = dict()
+            resp_status = 201
             
             if event[u'broadcast']:
-                for username in self.get_user().friends():
-                    user_id = User.get({u'username': username})[u'id']
-                    Attendant(user=user_id, event=event[u'id']).save()
+                usernames = self.get_user().friends()
+            elif u'users' in req_body:
+                usernames=req_body.get(u'users', list())
+            out_of_numbers = event.invite(usernames=usernames, 
+                                          contacts=req_body.get(u'contacts'))
+            if out_of_numbers is not None:
+                resp = {'error': 'OUT_OF_NUMBERS',
+                             'contacts': out_of_numbers,
+                             'event_revision': event[u'revision']}
+                resp_status = 409
             
-            self.output({u'revision': event[u'revision'], 
-                         u'id': event[u'id']}, 201)
+            resp[u'revision'] = event[u'revision']
+            resp[u'id'] = event[u'id']
+            self.output(resp, resp_status)
 
     @require_auth
     def get(self):
