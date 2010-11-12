@@ -1,10 +1,10 @@
 
-import tornado.web
 from tornado.web import HTTPError
-
-import db
 from utils import json, json_encoder
+import db
 import settings
+import tornado.web
+
 
 class BaseHandler(tornado.web.RequestHandler):
     
@@ -63,8 +63,10 @@ class BaseHandler(tornado.web.RequestHandler):
         Returns the user that made this request, based on the token used in the request.  If
         no token was attached, or the token was invalid, returns None.
         '''
+        #late import to break the cycle
+        from api.users.models import User
         session = self.get_session()
-        return session and db.objects.user.find_one({u'username': session[u'username']})
+        return session and User.get({u'username': session[u'username']})
     
     def require_args(self, *args):
         '''

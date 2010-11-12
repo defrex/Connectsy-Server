@@ -28,9 +28,8 @@ class EventsHandler(BaseHandler):
         Creates a new event
         '''
         req_body = self.body_dict()
-        response = {}
         event = Event()
-
+        
         #grab data from the user-supplied dict
         try:
             event[u'creator'] = self.get_session()[u'username']
@@ -49,11 +48,14 @@ class EventsHandler(BaseHandler):
                          'field_missing': e[0]}, 400)
         else:
             event.save()
-
-            response[u'revision'] = event[u'revision']
-            response[u'id'] = event[u'id']
             
-            self.output(response, 201)
+            if event[u'broadcast']:
+                for username in self.get_user().friends():
+                    user_id = User.get({u'username': username})[u'id']
+                    Attendant(user=user_id, event=event[u'id']).save()
+            
+            self.output({u'revision': event[u'revision'], 
+                         u'id': event[u'id']}, 201)
 
     @require_auth
     def get(self):

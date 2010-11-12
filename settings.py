@@ -28,8 +28,8 @@ TWILIO_NUMBERS = (
     '15126074649', # Austin
     '14155708208', # San Fran
     '16466005056', # New York
-    #'+13108959876', # L.A.
-    #'+16178703861', # Boston
+    '13108959876', # L.A.
+    '16178703861', # Boston
 )
 
 DEBUG = False

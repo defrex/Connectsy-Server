@@ -6,6 +6,7 @@ import comments
 import notification
 import lists
 import attendants
+import invites
 
 def load_tests(loader, tests, pattern):
     suite = TestSuite()
@@ -15,4 +16,5 @@ def load_tests(loader, tests, pattern):
     suite.addTests(defaultTestLoader.loadTestsFromModule(notification))
     suite.addTests(defaultTestLoader.loadTestsFromModule(lists))
     suite.addTests(defaultTestLoader.loadTestsFromModule(attendants))
+    suite.addTests(defaultTestLoader.loadTestsFromModule(invites))
     return suite

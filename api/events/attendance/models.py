@@ -75,6 +75,7 @@ class Attendant(Model):
                 ret.append(u[u'id'])
         ret = [u for u in ret if u not in skip]
         return ret
+    
 
     
 

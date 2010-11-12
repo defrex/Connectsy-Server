@@ -40,14 +40,7 @@ class InvitesHandler(BaseHandler):
             users = body.get(u'users', list())
             #friends is a special case
             if users == u'friends':
-                #get friends
-                username = self.get_session()[u'username']
-                friends = []
-                friends += [friend[u'to'] for friend in db.objects.friend.find(
-                        {u'from': username, u'status': friend_status.ACCEPTED})]
-                friends += [friend[u'from'] for friend in db.objects.friend.find(
-                        {u'to': username, u'status': friend_status.ACCEPTED})]
-                users = friends 
+                users = self.get_user().friends()
             
             #prevent people from inviting themselves
             if event[u'creator'] in users:
