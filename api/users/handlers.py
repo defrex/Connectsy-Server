@@ -1,6 +1,7 @@
 
 from PIL import Image #@UnresolvedImport
 from StringIO import StringIO
+from api.users.followers.models import Follower
 from api.users.models import User
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
@@ -69,7 +70,10 @@ class UserHandler(BaseHandler):
         
         #get friend status
         cur_user = self.get_session()[u'username']
-        ret['friend_status'] = friend_status(cur_user, username)
+        ret['following'] = Follower.get({u'follower': cur_user,
+                                         u'followee': username}) is not None
+        ret['followed'] = Follower.get({u'follower': username,
+                                        u'followee': cur_user}) is not None
         
         #write the user
         self.output(ret)
