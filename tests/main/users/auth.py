@@ -1,8 +1,17 @@
 
 from api.users.models import User
+from httplib import HTTPConnection
 from tests.base_testcase import ConsyTestCase
+import settings
 
 class Authentication(ConsyTestCase):
+    
+    def test_bad_token(self):
+        con = HTTPConnection('localhost:%i' % settings.PORT)
+        con.request('GET', '/users/%s/' % self.get_user()[u'username'], 
+                    None, {'Authenticate': 'Token auth=tokenfail'})
+        response = con.getresponse()
+        self.assertEqual(response.status, 401, '401 on bad token')
     
     def test_registration(self):
         response = self.put('/users/testuser/', {

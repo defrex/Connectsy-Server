@@ -1,4 +1,6 @@
 
+from pymongo.errors import InvalidId
+from pymongo.objectid import ObjectId
 from tornado.web import HTTPError
 from utils import json, json_encoder
 import db
@@ -49,13 +51,13 @@ class BaseHandler(tornado.web.RequestHandler):
         token = token[len(prefix):]
         
         #fetch the session from the database, and cache it
+        try:
+            token = ObjectId(token)
+        except InvalidId:
+            return
+        
         self.session = db.objects.session.find_one(token)
         
-        #only perform the following validations if the session actually exists
-        if self.session:
-            #TODO - if the session has expired, raise the appropriate error
-            pass
-            
         return self.session
         
     def get_user(self):
