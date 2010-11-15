@@ -1,5 +1,6 @@
 
 from tests.base_testcase import ConsyTestCase
+import json
 
 class UserSearch(ConsyTestCase):
     
@@ -10,3 +11,9 @@ class UserSearch(ConsyTestCase):
         
         response = self.get('/users/?q=c')
         self.assertEqual(response.status, 200, 'user search request')
+        
+        users = json.loads(response.read())
+        
+        self.assertEqual(len(users), 2, '2 users returned')
+        self.assertTrue(user[u'username'] in users, 'user 1 returned')
+        self.assertTrue(user2[u'username'] in users, 'user 2 returned')

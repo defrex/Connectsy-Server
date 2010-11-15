@@ -6,7 +6,6 @@ from api.users.models import User
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
 from utils import hash, require_auth, timestamp
-import db
 import os
 import re
 import uuid
@@ -24,7 +23,7 @@ class UsersHandler(BaseHandler):
         q = username_sanitizer.sub('', q)
         #query: *q*
         users = User.find({u'username': re.compile(q)})
-        self.output({u'results': [user[u'username'] for user in users]})
+        self.output([user[u'username'] for user in users])
 
 
 class UserHandler(BaseHandler):
