@@ -13,8 +13,8 @@ class EventLists(ConsyTestCase):
         user2 = self.make_user(username='user2')
         user3 = self.make_user(username='user3')
         
-        self.friend(user, user2)
-        self.friend(user3, user)
+        self.follow(user, user2, reciprocal=True)
+        self.follow(user3, user, reciprocal=True)
         
         event1 = Event(**{
             u'where': 'test',
@@ -55,9 +55,7 @@ class EventLists(ConsyTestCase):
         })
         event4.save()
         
-        response = self.get('/events/?filter=invited&'
-                            'lat=37.42283421666234&'
-                            'lng=-122.0853666783334&')
+        response = self.get('/events/?filter=invited')
         self.assertEqual(response.status, 200, 'response OK')
         
         events = json.loads(response.read())[u'events']
@@ -66,6 +64,7 @@ class EventLists(ConsyTestCase):
         self.assertTrue(event1[u'revision'] in events, 'event 1 returned')
         self.assertTrue(event2[u'revision'] in events, 'event 2 returned')
         self.assertTrue(event3[u'revision'] in events, 'event 3 returned')
+    
     
     def test_event_list_sort(self):
         t1 = timestamp()

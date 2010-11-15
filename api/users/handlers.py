@@ -3,7 +3,6 @@ from PIL import Image #@UnresolvedImport
 from StringIO import StringIO
 from api.users.models import User
 from base_handlers import BaseHandler
-from friends.friend_utils import friend_status
 from tornado.web import HTTPError
 from utils import hash, require_auth, timestamp
 import db

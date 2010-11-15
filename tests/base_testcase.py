@@ -1,6 +1,5 @@
 
-from api.users.friends import status
-from api.users.friends.models import Friend
+from api.users.followers.models import Follower
 from api.users.models import User
 from db import objects
 from db.index_setup import indexes
@@ -107,14 +106,21 @@ class ConsyTestCase(TestCase):
         u.save()
         return u
     
-    def friend(self, from_user, to_user):
-        f = Friend(**{
-            u'to': to_user[u'username'],
-            u'from': from_user[u'username'],
-            u'status': status.ACCEPTED,
+    def follow(self, follower, followee, reciprocal=False):
+        f = Follower(**{
+            u'follower': follower[u'username'],
+            u'followee': followee[u'username'],
         })
         f.save()
-        return f
+        if reciprocal:
+            f2 = Follower(**{
+                u'follower': followee[u'username'],
+                u'followee': follower[u'username'],
+            })
+            f2.save()
+            return f, f2
+        else:
+            return f
 
 
 

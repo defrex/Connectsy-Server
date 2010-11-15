@@ -38,7 +38,7 @@ class Model(object, DictMixin):
         if self.__class__.__fields__ is None:
             raise AttributeError, 'Model subclasses must set fields'
         self.__original__ = kwargs
-        self.__data__ = copy(self.__class__.__fields__)
+        self.__data__ = self.defaults(copy(self.__class__.__fields__))
         # all models get id, but shoudn't have to add it themselves
         self.__data__[u'id'] = None
         for key in kwargs:
@@ -46,6 +46,10 @@ class Model(object, DictMixin):
                 self.__data__[key] = self.value_sanitizer(key, kwargs[key])
         if u'_id' in kwargs and self.__data__[u'id'] is None:
             self.__data__[u'id'] = str(kwargs[u'_id'])
+    
+    def defaults(self, fields):
+        'Default values for fields should be provided here. Overwrite this.'
+        return fields
     
     def save(self, safe=False):
         obj = copy(self.__data__)

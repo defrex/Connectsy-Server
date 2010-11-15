@@ -7,13 +7,9 @@ class EventInvites(ConsyTestCase):
     
     def test_auto_invite(self):
         user = self.get_user()
-        user2 = self.make_user(username='user2')
+        user2 = self.make_user()
         
-        response = self.post('/users/%s/friends/' % user2[u'username'])
-        self.assertEqual(response.status, 200, 'friend request')
-        response = self.post('/users/%s/friends/' % user[u'username'],
-                             auth_user=user2)
-        self.assertEqual(response.status, 200, 'friend confirmation')
+        self.follow(user2, user)
         
         response = self.post('/events/', {
             u'broadcast': True,
@@ -29,13 +25,9 @@ class EventInvites(ConsyTestCase):
     
     def test_new_event_invite(self):
         user = self.get_user()
-        user2 = self.make_user(username='user2')
+        user2 = self.make_user()
         
-        response = self.post('/users/%s/friends/' % user2[u'username'])
-        self.assertEqual(response.status, 200, 'friend request')
-        response = self.post('/users/%s/friends/' % user[u'username'],
-                             auth_user=user2)
-        self.assertEqual(response.status, 200, 'friend confirmation')
+        self.follow(user2, user)
         
         response = self.post('/events/', {
             u'broadcast': False,

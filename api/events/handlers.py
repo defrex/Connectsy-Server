@@ -52,15 +52,15 @@ class EventsHandler(BaseHandler):
             resp_status = 201
             
             if event[u'broadcast']:
-                usernames = self.get_user().friends()
+                usernames = self.get_user().followers()
             elif u'users' in req_body:
                 usernames=req_body.get(u'users', list())
             out_of_numbers = event.invite(usernames=usernames, 
                                           contacts=req_body.get(u'contacts'))
             if out_of_numbers is not None:
                 resp = {'error': 'OUT_OF_NUMBERS',
-                             'contacts': out_of_numbers,
-                             'event_revision': event[u'revision']}
+                        'contacts': out_of_numbers,
+                        'event_revision': event[u'revision']}
                 resp_status = 409
             
             resp[u'revision'] = event[u'revision']
@@ -101,7 +101,7 @@ class EventsHandler(BaseHandler):
                             {u'_id': {'$in': event_ids}},
                             {
                                 u'broadcast': True, 
-                                u'creator': {'$in': user.friends()}
+                                u'creator': {'$in': user.following()}
                             }
                         ]}
         elif q_filter == u'creator':

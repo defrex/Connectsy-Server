@@ -1,8 +1,6 @@
 from api.SMS.sms_utils import normalize_phone_number
-from api.users.friends import status
 from db.models import Model
 from utils import timestamp
-import db
 import uuid
 
 class User(Model):
@@ -19,17 +17,15 @@ class User(Model):
     def is_registered(self):
         return self[u'username'] is not None
 
-    def friends(self):
-        '''
-        Gets a list of usernames of the user's friends
-        '''
-        to_side = [friend[u'to'] for friend in 
-                    db.objects.friend.find({u'from': self[u'username'], 
-                                            u'status': status.ACCEPTED})]
-        from_side = [friend[u'from'] for friend in 
-                    db.objects.friend.find({u'to': self[u'username'], 
-                                            u'status': status.ACCEPTED})]
-        return to_side + from_side
+    def followers(self, users=False):
+        from api.users.followers.models import Follower
+        return Follower.find({u'followee': 
+                              self[u'username']}).followers(users=users)
+
+    def following(self, users=False):
+        from api.users.followers.models import Follower
+        return Follower.find({u'follower': 
+                              self[u'username']}).followees(users=users)
     
     @classmethod
     def value_sanitizer(cls, field, value):
