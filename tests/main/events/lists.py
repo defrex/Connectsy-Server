@@ -66,6 +66,48 @@ class EventLists(ConsyTestCase):
         self.assertTrue(event3[u'revision'] in events, 'event 3 returned')
     
     
+    def test_event_list_auth(self):
+        user = self.get_user()
+        user2 = self.make_user()
+        
+        event1 = Event(**{
+            u'where': 'test',
+            u'when': timestamp(),
+            u'what': 'user2 created',
+            u'broadcast': False,
+            u'posted_from': [37.422834216666665, -122.08536667833332],
+            u'creator': user[u'username'],
+        })
+        event1.save()
+        Attendant(user=user2[u'id'], event=event1[u'id']).save()
+        
+        event2 = Event(**{
+            u'where': 'test',
+            u'what': 'user3 created',
+            u'broadcast': False,
+            u'creator': user[u'username'],
+        })
+        event2.save()
+        
+        event3 = Event(**{
+            u'where': 'test',
+            u'what': 'user2 created, broadcast',
+            u'broadcast': True,
+            u'posted_from': [37.422834216666665, -122.08536667833332],
+            u'creator': user[u'username'],
+        })
+        event3.save()
+        
+        response = self.get('/events/?filter=creator&username=%s' % user[u'username'])
+        self.assertEqual(response.status, 200, 'response OK')
+        
+        events = json.loads(response.read())[u'events']
+        
+        self.assertEqual(len(events), 2, 'correct number of events returned')
+        self.assertTrue(event1[u'revision'] in events, 'event 1 returned')
+        self.assertTrue(event3[u'revision'] in events, 'event 3 returned')
+    
+    
     def test_event_list_sort(self):
         t1 = timestamp()
         t2 = timestamp()
