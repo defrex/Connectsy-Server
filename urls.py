@@ -22,8 +22,6 @@ handlers = [
     (r"/users/", UsersHandler),
     (r"/users/(?P<username>\w*)/", UserHandler),
     (r"/users/(?P<username>\w*)/avatar/", AvatarHandler),
-#    (r"/users/(?P<username>\w*)/friends/", FriendsHandler),
-#    (r"/users/(?P<username>\w*)/friends/(?P<friend>\w*)/", FriendHandler),
     (r"/users/(?P<username>\w*)/followers/", FollowerHandler),
     (r"/users/(?P<username>\w*)/following/", FollowingHandler),
     (r"/events/", EventsHandler),

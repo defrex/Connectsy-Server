@@ -19,24 +19,12 @@ class UsersHandler(BaseHandler):
 
     @require_auth
     def get(self):
-        current_user = self.get_session()[u'username']
-        
         #grab and sanitize the query
         q = self.get_argument(u'q', u'')
         q = username_sanitizer.sub('', q)
-        
         #query: *q*
-        users = db.objects.user.find({u'username': re.compile(q)})
-        
-        #attach the friend status
-        results = []
-        for user in users:
-            username = user[u'username']
-            results.append({u'username': username,  
-                            u'friend_status': friend_status(current_user, 
-                                                            username)})
-        
-        self.output({u'results': results})
+        users = User.find({u'username': re.compile(q)})
+        self.output({u'results': [user[u'username'] for user in users]})
 
 
 class UserHandler(BaseHandler):
@@ -70,10 +58,10 @@ class UserHandler(BaseHandler):
         
         #get friend status
         cur_user = self.get_session()[u'username']
-        ret['following'] = Follower.get({u'follower': cur_user,
-                                         u'followee': username}) is not None
-        ret['followed'] = Follower.get({u'follower': username,
-                                        u'followee': cur_user}) is not None
+        ret['follower'] = Follower.get({u'follower': cur_user,
+                                        u'followee': username}) is not None
+        ret['following'] = Follower.get({u'follower': username,
+                                         u'followee': cur_user}) is not None
         
         #write the user
         self.output(ret)

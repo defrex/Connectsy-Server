@@ -29,7 +29,7 @@ class User(Model):
     
     @classmethod
     def value_sanitizer(cls, field, value):
-        if field == u'username':
+        if field == u'username' and type(value) in (str, unicode):
             return value.lower()
         elif field == u'contact_number':
             return normalize_phone_number(value)
