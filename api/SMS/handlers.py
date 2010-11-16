@@ -61,7 +61,7 @@ class SMSHandler(BaseHandler):
                             u'event_revision': event[u'revision'],
                             u'event_id': event[u'id'],
                             u'comment': body,
-                            u'commenter': user[u'id']}
+                            u'commenter': user[u'display_name']}
         
         for uname in Attendant.to_notify(event, skip=[user[u'id']]):
             notifications.send(uname, notification)
