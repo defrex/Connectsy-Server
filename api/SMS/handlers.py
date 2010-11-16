@@ -43,11 +43,10 @@ class SMSHandler(BaseHandler):
             att[u'status'] = status.ATTENDING
             att.save(safe=True)
             
-            for uname in Attendant.to_notify(event, skip=[user[u'id']]):
-                notifications.send(uname, {u'type': 'attendant',
-                                           u'event_revision': event[u'revision'],
-                                           u'event_id': event[u'id'],
-                                           u'attendant': user[u'id'],})
+            notification = {u'type': 'attendant',
+                            u'event_revision': event[u'revision'],
+                            u'event_id': event[u'id'],
+                            u'attendant': user[u'id'],}
         
         if len(body.lower().replace('#in', '')):
 #                    .replace('#who', '')
@@ -57,7 +56,15 @@ class SMSHandler(BaseHandler):
                 u'event': event[u'id'],
                 u'user': user[u'id']
             }).save()
+            
+            notification = {u'type': 'comment',
+                            u'event_revision': event[u'revision'],
+                            u'event_id': event[u'id'],
+                            u'comment': body,
+                            u'commenter': user[u'id']}
         
+        for uname in Attendant.to_notify(event, skip=[user[u'id']]):
+            notifications.send(uname, notification)
         
         
 #        account = twilio.Account(settings.TWILIO_ACCOUNT_SID,
