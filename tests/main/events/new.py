@@ -12,16 +12,31 @@ class EventNew(ConsyTestCase):
             u'broadcast': False,
         })
         self.assertEqual(response.status, 400, 'new event 400')
-        
-        body = response.read()
-        try:
-            body = json.loads(body)
-        except ValueError:
-            self.assertTrue(False, 'response body is json: %s' % body)
-        
-        self.assertTrue('error' in body)
+        body = json.loads(response.read())
         self.assertEqual(body['error'], 'MISSING_FIELDS')
+        self.assertEqual(body['field'], 'what')
         
+        response = self.post('/events/', {
+            u'what': 'TestCase',
+            u'where': '--------------------------', #len: 26
+        })
+        self.assertEqual(response.status, 400, 'new event 400')
+        body = json.loads(response.read())
+        self.assertEqual(body['error'], 'FIELD_LENGTH')
+        self.assertEqual(body['field'], 'where')
+        
+        response = self.post('/events/', {
+            u'what': '-------------------------'
+                     '-------------------------'
+                     '-------------------------'
+                     '-------------------------'
+                     '-------------------------'
+                     '----------------', #len: 141
+        })
+        self.assertEqual(response.status, 400, 'new event 400')
+        body = json.loads(response.read())
+        self.assertEqual(body['error'], 'FIELD_LENGTH')
+        self.assertEqual(body['field'], 'what')
     
     def test_event_new(self):
         response = self.post('/events/', {

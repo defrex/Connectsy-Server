@@ -28,44 +28,51 @@ class EventsHandler(BaseHandler):
         Creates a new event
         '''
         req_body = self.body_dict()
-        event = Event()
+        event = Event(creator=self.get_session()[u'username'])
         
         #grab data from the user-supplied dict
-        try:
-            event[u'creator'] = self.get_session()[u'username']
-            event[u'what'] = req_body[u'what']
-            event[u'broadcast'] = req_body[u'broadcast']
-            
-            #optional:
-            event[u'where'] = req_body.get(u'where')
-            event[u'when'] = req_body.get(u'when')
-            event[u'posted_from'] = req_body.get(u'posted_from')
-            event[u'location'] = req_body.get(u'location')
-            event[u'category'] = req_body.get(u'category')
-            event[u'client'] = req_body.get(u'client')
-        except KeyError, e:
+        what = req_body.get(u'what')
+        if what is None:
             self.output({'error': 'MISSING_FIELDS',
-                         'field_missing': e[0]}, 400)
-        else:
-            event.save()
-            resp = dict()
-            resp_status = 201
-            
-            if event[u'broadcast']:
-                usernames = self.get_user().followers()
-            elif u'users' in req_body:
-                usernames=req_body.get(u'users', list())
-            out_of_numbers = event.invite(usernames=usernames, 
-                                          contacts=req_body.get(u'contacts'))
-            if out_of_numbers is not None:
-                resp = {'error': 'OUT_OF_NUMBERS',
-                        'contacts': out_of_numbers,
-                        'event_revision': event[u'revision']}
-                resp_status = 409
-            
-            resp[u'revision'] = event[u'revision']
-            resp[u'id'] = event[u'id']
-            self.output(resp, resp_status)
+                         'field': 'what'}, 400)
+        if len(what) > 140:
+            self.output({'error': 'FIELD_LENGTH',
+                         'field': 'what'}, 400)
+        event[u'what'] = what
+        
+        where = req_body.get(u'where')
+        if where is not None and len(where) > 25:
+            self.output({'error': 'FIELD_LENGTH',
+                         'field': 'where'}, 400)
+        event[u'where'] = where
+        
+        #optional:
+        event[u'broadcast'] = req_body.get(u'broadcast', True)
+        event[u'when'] = req_body.get(u'when')
+        event[u'posted_from'] = req_body.get(u'posted_from')
+        event[u'location'] = req_body.get(u'location')
+        event[u'category'] = req_body.get(u'category')
+        event[u'client'] = req_body.get(u'client')
+    
+        event.save()
+        resp = dict()
+        resp_status = 201
+        
+        if event[u'broadcast']:
+            usernames = self.get_user().followers()
+        elif u'users' in req_body:
+            usernames = req_body[u'users']
+        out_of_numbers = event.invite(usernames=usernames, 
+                                      contacts=req_body.get(u'contacts'))
+        if out_of_numbers is not None:
+            resp = {'error': 'OUT_OF_NUMBERS',
+                    'contacts': out_of_numbers,
+                    'event_revision': event[u'revision']}
+            resp_status = 409
+        
+        resp[u'revision'] = event[u'revision']
+        resp[u'id'] = event[u'id']
+        self.output(resp, resp_status)
 
     @require_auth
     def get(self):
