@@ -93,25 +93,28 @@ class EventsHandler(BaseHandler):
         elif q_sort == u'nearby':
             raise HTTPError(403)
 
+        events_invited = [ObjectId(att[u'event']) for att in 
+                          Attendant.find({u'user': user[u'id']})]
         #prep filtering
         if q_filter == 'invited':
-            event_ids = [ObjectId(att[u'event']) for att in 
-                         Attendant.find({u'user': user[u'id']})]
             q_filter = {'$or': [
-                            {u'_id': {'$in': event_ids}},
+                            {u'creator': username},
+                            {u'_id': {'$in': events_invited}},
                             {
                                 u'broadcast': True, 
                                 u'creator': {'$in': user.following()}
                             }
                         ]}
         elif q_filter == u'creator':
-            q_filter = {u'creator': self.get_argument(u'username', username)}
+            q_filter = {u'creator': self.get_argument(u'username', username),
+                        u'$or': [{u'_id': {'$in': events_invited}},
+                                 {u'broadcast': True}]}
         elif q_filter == u'public':
             q_filter = {u'broadcast': True}
             if category is not None:
                 q_filter[u'category'] = category 
         
-        # This can be uncommented when mongogb gets suppor tfor $and
+        # This can be uncommented when mongogb gets support for $and
 #        # Limit to nearby times
 #        q_filter.update({'$or': [{u'when': {u'$lt': timestamp() + UNTIL_LIMIT,
 #                                            u'$gt': timestamp() - SINCE_LIMIT}},
@@ -123,7 +126,7 @@ class EventsHandler(BaseHandler):
             q_filter.update({u'posted_from': {u'$near': where}})
             #use 'soon' as a secondary sort
             q_sort = u'soon'
-
+        
         # Run the query
         events = db.objects.event.find(q_filter, limit=30)
 
