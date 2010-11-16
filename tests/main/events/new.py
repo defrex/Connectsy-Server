@@ -1,4 +1,5 @@
 
+from api.events.models import Event
 from tests.base_testcase import ConsyTestCase
 from utils import timestamp
 import json
@@ -62,6 +63,25 @@ class EventNew(ConsyTestCase):
         
         self.assertEqual(len(body['event']), 6, 
                          'correct number of fields returned')
+    
+    def test_event_new_created(self):
+        response = self.post('/events/', {
+            u'broadcast': True,
+            u'what': 'Testin event creation',
+        })
+        self.assertEqual(response.status, 201, 'new event 201')
+        
+        response = self.post('/events/', {
+            u'broadcast': True,
+            u'what': 'Testin event creation',
+        })
+        self.assertEqual(response.status, 201, 'new event 201')
+        
+        events = Event.find({u'creator': self.get_user()[u'username']})
+        self.assertEqual(len(events), 2, '2 events created')
+        self.assertNotEqual(events[0][u'created'], events[1][u'created'], 
+                            'created times are different')
+        
         
         
         

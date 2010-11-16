@@ -18,7 +18,7 @@ class Event(Model):
         u'creator': None,
         u'category': None,
         u'broadcast': False,
-        u'created': timestamp(),
+        u'created': lambda: timestamp(),
         u'revision': None,
     }
     

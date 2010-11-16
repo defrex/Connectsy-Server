@@ -6,7 +6,7 @@ class GenericPollNotifications(Model):
     __collection__ = 'generic_poll_client'
     __fields__ = {
         u'client_id': None,
-        u'notifications': list(),
+        u'notifications': lambda: list(),
     }
     
     @staticmethod

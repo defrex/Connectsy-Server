@@ -10,8 +10,8 @@ class User(Model):
         u'password': None,
         u'number': None,
         u'display_name': None,
-        u'revision': uuid.uuid1().hex,
-        u'created': timestamp(),
+        u'revision': lambda: uuid.uuid1().hex,
+        u'created': lambda: timestamp(),
     }
     
     def is_registered(self):

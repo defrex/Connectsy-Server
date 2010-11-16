@@ -11,7 +11,7 @@ class Comment(Model):
         u'comment': None,
         u'event': None,
         u'user': None,
-        u'created': timestamp(),
+        u'created': lambda: timestamp(),
     }
 
     def __init__(self, **kwargs):

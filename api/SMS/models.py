@@ -8,7 +8,7 @@ class SMSRegister(Model):
     __fields__ = {
         u'contact_number': None,
         u'twilio_number': None,
-        u'expires': timestamp(),
+        u'expires': lambda: timestamp(),
         u'event': None,
         u'user': None,
     }

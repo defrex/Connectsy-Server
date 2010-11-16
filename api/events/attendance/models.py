@@ -21,7 +21,7 @@ class Attendant(Model):
     __model_cursor__ = AttendantCursor
     __fields__ = {
         u'status': status.INVITED,
-        u'timestamp': timestamp(),
+        u'timestamp': lambda: timestamp(),
         u'event': None,
         u'user': None,
     }

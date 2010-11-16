@@ -39,6 +39,9 @@ class Model(object, DictMixin):
             raise AttributeError, 'Model subclasses must set fields'
         self.__original__ = kwargs
         self.__data__ = self.defaults(copy(self.__class__.__fields__))
+        for k, v in self.__data__.iteritems():
+            if callable(v):
+                self.__data__[k] = v()
         # all models get id, but shoudn't have to add it themselves
         self.__data__[u'id'] = None
         for key in kwargs:
