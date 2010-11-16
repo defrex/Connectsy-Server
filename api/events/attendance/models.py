@@ -64,7 +64,7 @@ class Attendant(Model):
     
     @classmethod
     def to_notify(cls, event, skip=list()):
-        atts = cls.find({u'event': event[u'id'], u'status': status.ATTENDING})
+        atts = cls.find({u'event': event[u'id']})#, u'status': status.ATTENDING})
         ids = [ObjectId(a[u'user']) for a in atts]
         users = User.find({u'_id': {u'$in': ids}})
         ret = [event[u'creator']]

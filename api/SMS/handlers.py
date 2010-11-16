@@ -8,6 +8,7 @@ from api.events.models import Event
 from api.users.models import User
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
+import notifications
 
 
 
@@ -34,6 +35,30 @@ class SMSHandler(BaseHandler):
         
         user = User.get(sms_reg[u'user'])
         if user is None: raise HTTPError(404)
+        
+        if '#in' in body.lower():
+            att = Attendant.get({u'user': user[u'id'], u'event': event[u'id']})
+            if att is None: raise HTTPError(404)
+            
+            att[u'status'] = status.ATTENDING
+            att.save(safe=True)
+            
+            for uname in Attendant.to_notify(event, skip=[user[u'id']]):
+                notifications.send(uname, {u'type': 'attendant',
+                                           u'event_revision': event[u'revision'],
+                                           u'event_id': event[u'id'],
+                                           u'attendant': user[u'id'],})
+        
+        if len(body.lower().replace('#in', '')):
+#                    .replace('#who', '')
+#                    .replace('#what', '')):
+            Comment(**{
+                u'comment': body,
+                u'event': event[u'id'],
+                u'user': user[u'id']
+            }).save()
+        
+        
         
 #        account = twilio.Account(settings.TWILIO_ACCOUNT_SID,
 #                                 settings.TWILIO_AUTH_TOKEN)
@@ -72,24 +97,6 @@ class SMSHandler(BaseHandler):
 #                    'From': twilio_number,
 #                    'Body': message,
 #                })
-        
-        if '#in' in body:
-            att = Attendant.get({u'user': user[u'id'], u'event': event[u'id']})
-            if att is None: raise HTTPError(404)
-            
-            att[u'status'] = status.ATTENDING
-            att.save(safe=True)
-        
-        if len(body.replace('#in', '')):
-#                    .replace('#who', '')
-#                    .replace('#what', '')):
-            Comment(**{
-                u'comment': body,
-                u'event': event[u'id'],
-                u'user': user[u'id']
-            }).save()
-        
-        
          
 
 
