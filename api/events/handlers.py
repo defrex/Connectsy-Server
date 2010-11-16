@@ -35,15 +35,18 @@ class EventsHandler(BaseHandler):
         if what is None:
             self.output({'error': 'MISSING_FIELDS',
                          'field': 'what'}, 400)
-        if len(what) > 140:
+            return
+        elif len(what) > 140:
             self.output({'error': 'FIELD_LENGTH',
                          'field': 'what'}, 400)
+            return
         event[u'what'] = what
         
         where = req_body.get(u'where')
         if where is not None and len(where) > 25:
             self.output({'error': 'FIELD_LENGTH',
                          'field': 'where'}, 400)
+            return
         event[u'where'] = where
         
         #optional:
@@ -60,8 +63,8 @@ class EventsHandler(BaseHandler):
         
         if event[u'broadcast']:
             usernames = self.get_user().followers()
-        elif u'users' in req_body:
-            usernames = req_body[u'users']
+        else:
+            usernames = req_body.get(u'users', list())
         out_of_numbers = event.invite(usernames=usernames, 
                                       contacts=req_body.get(u'contacts'))
         if out_of_numbers is not None:
