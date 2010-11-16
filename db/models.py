@@ -60,6 +60,10 @@ class Model(object, DictMixin):
         if id is not None:
             self[u'id'] = str(id)
     
+    def delete(self):
+        if self[u'id'] is not None:
+            self.collection().remove(ObjectId(self[u'id']))
+    
     def collection(self):
         return db.objects.__getattr__(self.__collection__)
     

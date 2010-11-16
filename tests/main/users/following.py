@@ -1,4 +1,5 @@
 
+from api.users.followers.models import Follower
 from tests.main.notification.bases import GenericPollNotificationTest
 import json
 
@@ -29,6 +30,25 @@ class UserFollowing(GenericPollNotificationTest):
         self.assertEqual(len(followees), 1, 'user1 has 1 followee')
         self.assertEqual(followees[0][u'username'], user2[u'username'], 
                          'user1 is following user2')
+    
+    def test_user_unfollow(self):
+        user1 = self.make_user()
+        user2 = self.make_user()
+        
+        self.follow(user2, user1)
+        
+        self.assertTrue(Follower.get({u'follower': user2[u'username'],
+                                      u'followee': user1[u'username']}) is not None,
+                                      'user2 following user1')
+        
+        response = self.post('/users/%s/followers/' % user1[u'username'],
+                             {'follow': False}, auth_user=user2)
+        self.assertEqual(response.status, 200, 'unfollow returned 200')
+        
+        self.assertTrue(Follower.get({u'follower': user2[u'username'],
+                                      u'followee': user1[u'username']}) is None,
+                                      'user2 is not following user1')
+
     
     def test_user_following_notification(self):
         to_notify = self.make_user()
