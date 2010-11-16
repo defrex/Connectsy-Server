@@ -78,26 +78,4 @@ def register(event, contacts):
     return registered, out_of_numbers, has_username
 
 
-def new_event(event):
-    smsees = db.objects.sms_reg.find({u'event': event[u'id']})
-    if smsees.count() == 0: return
-    account = twilio.Account(settings.TWILIO_ACCOUNT_SID,
-                             settings.TWILIO_AUTH_TOKEN)
-    message = ('%(username)s invited you to %(where)s %(when)s. '
-               'Reply to comment, include #in to join, #what or '
-               '#who for more info. -Connectsy') % {
-                    'username': event[u'creator'],
-                    'where': event[u'where'],
-                    'when': format_date(event[u'when']),
-                }
-    for smsee in smsees:
-        try:
-            account.request(SMS_OUTPUT_URL, 'POST', {
-                    'To': smsee[u'contact_number'],
-                    'From': smsee[u'twilio_number'],
-                    'Body': message,
-                })
-        except HTTPError, e:
-            print e.read()
-
 

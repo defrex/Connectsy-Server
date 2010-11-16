@@ -27,11 +27,8 @@ class Notifier(notifier.Notifier):
         texts = list()
         
         if message[u'type'] == u'invite':
-            texts.append('%(username)s: %(what)s' % 
-                         {'username': event[u'creator'], 
-                          'what': event[u'what']})
             
-            t2 = ('%s just shared a plan with you on '
+            t2 = ('%s shared a plan with you on '
                   'Connectsy. ' % event[u'creator'])
             if event[u'where'] is not None:
                 t2 += 'Where: %s' % event[u'where']
@@ -41,8 +38,12 @@ class Notifier(notifier.Notifier):
                     t2 += ". "
             if event[u'when'] is not None and event[u'when'] != 0:
                 t2 += 'When: %s. ' % format_date(event[u'when'])
-            t2 += 'Reply to comment, include #in to join.'
+            t2 += 'Reply to send a comment, include #in to join.'
             texts.append(t2)
+            
+            texts.append('What\'s the plan: %(what)s' % 
+                         {'username': event[u'creator'], 
+                          'what': event[u'what']})
             
         elif message[u'type'] == u'comment':
             texts.append('%(commenter)s commented: %(comment)s' % message)
