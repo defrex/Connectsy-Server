@@ -86,7 +86,7 @@ class AvatarHandler(BaseHandler):
     
     @require_auth
     def put(self, username):
-        if not self.get_user().get(u'username') == username:
+        if not self.get_session()[u'username'] == username:
             raise HTTPError(403)
         
         #make sure we remove any old files with different extensions, because
