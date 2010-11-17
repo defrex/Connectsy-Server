@@ -4,6 +4,7 @@ from api.events.attendance.models import Attendant
 from api.events.models import Event
 from tests.main.notification.bases import GenericPollNotificationTest
 from utils import timestamp
+import json
 
 class EventNotifications(GenericPollNotificationTest):
     
@@ -213,6 +214,39 @@ class EventNotifications(GenericPollNotificationTest):
                         'poll response has attendant')
         self.assertEqual(notification[u'attendant'], to_attend[u'username'], 
                          'event has the corrrect attendant')
+        
+        
+        
+    
+    def test_event_notification_attending_double(self):
+        
+        to_attend = self.make_user(username='attending_user')
+        self.follow(to_attend, self.get_user())
+        self.register_for_notifications()
+        
+        response = self.post('/events/', {u'what': 'Testin event creation'})
+        self.assertEqual(response.status, 201, 'new event')
+        event = json.loads(response.read())
+        
+        response = self.post('/events/%s/attendants/' % event[u'id'], 
+                             {u'status': status.ATTENDING}, 
+                             auth_user=to_attend)
+        self.assertEqual(response.status, 200, 'attendants POST 200')
+        
+        response = self.post('/events/%s/attendants/' % event[u'id'], 
+                             {u'status': status.NOT_ATTENDING}, 
+                             auth_user=to_attend)
+        self.assertEqual(response.status, 200, 'attendants POST 200')
+        
+        response = self.post('/events/%s/attendants/' % event[u'id'], 
+                             {u'status': status.ATTENDING}, 
+                             auth_user=to_attend)
+        self.assertEqual(response.status, 200, 'attendants POST 200')
+        
+        nots = self.get_new_notifications()
+        
+        self.assertEqual(len(nots), 1, 'one new notification')
+        
         
         
         
