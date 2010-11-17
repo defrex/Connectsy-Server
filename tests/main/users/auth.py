@@ -32,7 +32,7 @@ class Authentication(ConsyTestCase):
     def test_registraction_username_validation(self):
         User(**{
             u'username': u'test',
-            u'password': u'passw0rd',
+            u'password': User.hash_password(u'passw0rd'),
             u'number': u'16475557000',
         }).save()
         

@@ -1,7 +1,9 @@
-import time
-
-import settings
 from base_handlers import BaseHandler
+import db
+import settings
+import time
+import winter
+
 
 def nice_time(span):
     '''
@@ -20,6 +22,12 @@ def nice_time(span):
 start_time = time.time()
 class RootHandler(BaseHandler):
     def get(self):
+        dbase = db.objects.get_database()
+        for c in winter.managers:
+            dbase.drop_collection(c)
+            dbase.create_collection(c)
+        db.objects.connection['admin'].command('fsync')
+        
         version = u'1.0'
         mode = u'Development' if settings.DEVELOPMENT else u'Production'
         uptime = time.time() - start_time
