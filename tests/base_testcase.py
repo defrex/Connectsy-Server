@@ -43,7 +43,7 @@ class ConsyTestCase(TestCase):
             body = json.dumps(body)
         
         if auth:
-            auth_user = auth_user or self.get_user() 
+            auth_user = auth_user or self.get_user()
             headers['Authenticate'] = 'Token auth=%s' % self.get_token(user=auth_user)
         
         con = HTTPConnection('localhost:%i' % settings.PORT)
@@ -52,7 +52,7 @@ class ConsyTestCase(TestCase):
     
     def get(self, path, args=None, auth=True, auth_user=None):
         if args is None:
-            return self.request('GET', path, auth=auth)
+            return self.request('GET', path, auth=auth, auth_user=auth_user)
         else:
             urlargs = '?'
             for key, val in args.iteritems():
@@ -107,16 +107,12 @@ class ConsyTestCase(TestCase):
         return u
     
     def follow(self, follower, followee, reciprocal=False):
-        f = Follower(**{
-            u'follower': follower[u'username'],
-            u'followee': followee[u'username'],
-        })
+        f = Follower(follower=follower[u'username'],
+                     followee=followee[u'username'])
         f.save()
         if reciprocal:
-            f2 = Follower(**{
-                u'follower': followee[u'username'],
-                u'followee': follower[u'username'],
-            })
+            f2 = Follower(follower=followee[u'username'],
+                          followee=follower[u'username'])
             f2.save()
             return f, f2
         else:

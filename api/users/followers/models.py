@@ -27,12 +27,9 @@ class Follower(Model):
     __fields__ = {
         u'follower': None,
         u'followee': None,
-        u'created': None,
+        u'created': lambda: timestamp(),
     }
     
-    def defaults(self, fields):
-        fields[u'created'] = timestamp()
-        return fields
     
 
 

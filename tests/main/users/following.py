@@ -30,11 +30,25 @@ class UserFollowing(GenericPollNotificationTest):
         self.assertEqual(len(followees), 1, 'user1 has 1 followee')
         self.assertEqual(followees[0], user2[u'username'], 
                          'user1 is following user2')
+        
+    
+    def test_following_in_userdata(self):
+        user1 = self.make_user()
+        user2 = self.make_user()
+        self.follow(user2, user1)
+        
+        response = self.get('/users/%s/' % user1[u'username'], auth_user=user2)
+        self.assertEqual(response.status, 200, 'user2 get user1 profile')
+        
+        user_data = json.loads(response.read())
+        
+        self.assertTrue(user_data[u'following'], 'user2 following user1')
+        self.assertFalse(user_data[u'follower'], 'user1 not following user2')
+        
     
     def test_user_unfollow(self):
         user1 = self.make_user()
         user2 = self.make_user()
-        
         self.follow(user2, user1)
         
         self.assertTrue(Follower.get({u'follower': user2[u'username'],

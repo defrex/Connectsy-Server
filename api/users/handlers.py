@@ -53,17 +53,17 @@ class UserHandler(BaseHandler):
         u = User.get({u'username': username})
         if u is None: raise HTTPError(404)
         
-        ret = u.__data__
-        
-        #get friend status
         cur_user = self.get_session()[u'username']
-        ret['follower'] = Follower.get({u'follower': cur_user,
-                                        u'followee': username}) is not None
-        ret['following'] = Follower.get({u'follower': username,
-                                         u'followee': cur_user}) is not None
         
-        #write the user
-        self.output(ret)
+        follower = Follower.get({u'follower': username, u'followee': cur_user})
+        following = Follower.get({u'follower': cur_user, u'followee': username})
+        
+        self.output({
+            u'username': u['username'],
+            u'created': u[u'created'],
+            u'follower': (follower is not None),
+            u'following': (following is not None),
+        })
 
 
 avatar_dir = os.path.join(os.path.dirname(__file__),
