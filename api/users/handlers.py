@@ -5,7 +5,7 @@ from api.users.followers.models import Follower
 from api.users.models import User
 from base_handlers import BaseHandler
 from tornado.web import HTTPError
-from utils import hash, require_auth, timestamp
+from utils import require_auth, timestamp
 import os
 import re
 import uuid
@@ -28,6 +28,7 @@ class UsersHandler(BaseHandler):
 
 class UserHandler(BaseHandler):
     def put(self, username):
+        username = username.lower()
         #make sure we're not overwriting an existing user
         u = User.get({u'username': username})
         if u is not None: 
@@ -36,11 +37,10 @@ class UserHandler(BaseHandler):
         #set up the password
         password = self.body_dict().get('password')
         if not password: raise HTTPError(403)
-        password = hash(password)
         
         User(**{
             u'username': username, 
-            u'password': password,
+            u'password': User.hash_password(password),
             u'number': self.body_dict().get('number'),
             u'revision': uuid.uuid1().hex,
             u'created': int(timestamp()),

@@ -1,6 +1,8 @@
 from api.SMS.sms_utils import normalize_phone_number
 from db.models import Model
+from hashlib import sha256
 from utils import timestamp
+import settings
 import uuid
 
 class User(Model):
@@ -35,6 +37,10 @@ class User(Model):
             return normalize_phone_number(value)
         else:
             return value
+    
+    @classmethod
+    def hash_password(cls, password):
+        return sha256(password+settings.SALT).hexdigest()
     
 
 

@@ -1,7 +1,6 @@
 
 from api.SMS.models import SMSRegister
 from api.SMS.sms_utils import format_date, normalize_phone_number
-from api.users.models import User
 from datetime import datetime
 from notifications.models import NotificationRegister
 from urllib2 import HTTPError
@@ -9,13 +8,6 @@ from utils import timestamp, from_timestamp
 import db
 import settings
 import twilio
-
-
-SMS_INPUT_URL = u'http://%s/extras/SMS/' % settings.DOMAIN
-SMS_OUTPUT_URL = u'/%(api_version)s/Accounts/%(account_sid)s/SMS/Messages' % {
-    u'api_version': u'2010-04-01',
-    u'account_sid': settings.TWILIO_ACCOUNT_SID,
-}
 
 
 class OutOfNumbersException(Exception):
@@ -28,6 +20,8 @@ class OutOfNumbersException(Exception):
 
 
 def register(event, contacts):
+    #late import to User model can use phone number normalizer
+    from api.users.models import User
     if not u'id' in event:
         event[u'id'] = str(event[u'_id'])
     

@@ -1,8 +1,7 @@
-from api.SMS import SMS_OUTPUT_URL
 from api.SMS.models import SMSRegister
 from api.SMS.sms_utils import format_date
-from api.events.models import Event
 from notifications import notifier
+from settings import SMS_OUTPUT_URL
 from urllib2 import HTTPError
 import settings
 import twilio
@@ -10,6 +9,7 @@ import twilio
 class Notifier(notifier.Notifier):
     
     def send(self, user, client_id, message):
+        from api.events.models import Event
         
         if message[u'type'] not in (u'invite', u'comment'):
             return False

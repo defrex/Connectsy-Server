@@ -32,6 +32,12 @@ TWILIO_NUMBERS = (
     '16178703861', # Boston
 )
 
+SMS_INPUT_URL = u'http://dev.connectsy.com/extras/SMS/'
+SMS_OUTPUT_URL = u'/%(api_version)s/Accounts/%(account_sid)s/SMS/Messages' % {
+    u'api_version': u'2010-04-01',
+    u'account_sid': TWILIO_ACCOUNT_SID,
+}
+
 DEBUG = False
 
 # This is at the bottom so as to override anything we set here

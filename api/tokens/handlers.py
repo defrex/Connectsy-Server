@@ -1,29 +1,26 @@
-from tornado.web import HTTPError
-
+from api.users.models import User
 from base_handlers import BaseHandler
-
+from tornado.web import HTTPError
+from utils import timestamp
 import db
-from utils import timestamp, hash
+
+
 
 class TokenHandler(BaseHandler):
     def get(self):        
         #ensure that username and password are in the args
         self.require_args('username', 'password')
         
-        #hash and salt the password... mmm delicious
-        password = hash(self.get_argument('password'))
+        username = self.get_argument(u'username').lower()
+        password = User.hash_password(self.get_argument('password'))
+        user = User.get({u'username': username,  u'password': password})
         
-        #try to find a user with the given username/password
-        user = db.objects.user.find_one({u'username': self.get_argument(u'username'),
-                u'password': password})
-        
-        #fail if they don't exist
-        if user is None: raise HTTPError(404) #FIXME: better error
+        if user is None: raise HTTPError(404)
         
         #otherwise generate a token, save it, and return it
         token = str(db.objects.session.insert({
             u'timestamp': timestamp(),
-            u'username': self.get_argument(u'username')
+            u'username': username
         }))
         self.write(token)
     

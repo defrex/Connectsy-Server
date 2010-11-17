@@ -47,4 +47,15 @@ class Authentication(ConsyTestCase):
             u'number': u'+16747005290',
         }, auth=False)
         self.assertEqual(response.status, 409, 'usernames case insensitive')
+        
+    def test_case_insensitive_login(self):
+        User(**{
+            u'username': u'test',
+            u'password': User.hash_password(u'passw0rd'),
+            u'number': u'16475557000',
+        }).save()
+        
+        response = self.get('/token/', {u'password': u'passw0rd',
+                                        u'username': u'TesT'}, auth=False)
+        self.assertEqual(response.status, 200, '/token/ GET')
     

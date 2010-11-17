@@ -26,12 +26,6 @@ from datetime import datetime
 def from_timestamp(timestamp):
     return datetime.fromtimestamp(timestamp/1000)
 
-# Generates a salted SHA1 hash of the specified value
-def hash(val):
-    h = hashlib.sha1(val)
-    h.update(settings.SALT)
-    return h.hexdigest()
-    
 
 # Decorator for methods that require user authorization.  If the user
 # specified a valid token in the request, the method will be called as per

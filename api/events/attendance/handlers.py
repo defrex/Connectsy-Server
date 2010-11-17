@@ -54,9 +54,7 @@ class AttendanceHandler(BaseHandler):
         
         if att[u'status'] == status.ATTENDING:
             #Send out the attendant notifications
-            usernames = Attendant.to_notify(event, skip=[username])
-            print 'notifying', usernames
-            for uname in usernames:
+            for uname in Attendant.to_notify(event, skip=[username]):
                 notifications.send(uname, {u'type': 'attendant',
                                            u'event_revision': event[u'revision'],
                                            u'event_id': event[u'id'],
