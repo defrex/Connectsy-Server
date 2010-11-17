@@ -49,21 +49,18 @@ class AttendanceHandler(BaseHandler):
         if body.get(u'status') not in valid_statuses:
             raise HTTPError(400)
         
-        notify = False
-        if att[u'status'] == status.INVITED and body[u'status'] == status.ATTENDING:
-            notify = True
-        
         att[u'status'] = body[u'status']
         att.save()
         
-        if notify:
+        if att[u'status'] == status.ATTENDING:
             #Send out the attendant notifications
             usernames = Attendant.to_notify(event, skip=[username])
+            print 'notifying', usernames
             for uname in usernames:
                 notifications.send(uname, {u'type': 'attendant',
                                            u'event_revision': event[u'revision'],
                                            u'event_id': event[u'id'],
-                                           u'attendant': username,})
+                                           u'attendant': username})
     
 
 
