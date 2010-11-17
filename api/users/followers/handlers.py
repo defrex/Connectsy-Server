@@ -7,10 +7,8 @@ import notifications
 class FollowerHandler(BaseHandler):
     
     def get(self, username):
-        followers = Follower.find({u'followee': username}).followers()
-        self.output([{u'username': u[u'username'],
-                      u'created': u[u'created'],
-                      u'id': u[u'id']} for u in followers], 200)
+        followers = Follower.find({u'followee': username}).followers(users=False)
+        self.output(followers, 200)
     
     def post(self, username):
         follow = self.body_dict().get(u'follow')
@@ -31,7 +29,5 @@ class FollowerHandler(BaseHandler):
 class FollowingHandler(BaseHandler):
     
     def get(self, username):
-        followees = Follower.find({u'follower': username}).followees()
-        self.output([{u'username': u[u'username'],
-                      u'created': u[u'created'],
-                      u'id': u[u'id']} for u in followees], 200)
+        followees = Follower.find({u'follower': username}).followees(users=False)
+        self.output(followees, 200)
