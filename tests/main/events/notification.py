@@ -222,11 +222,12 @@ class EventNotifications(GenericPollNotificationTest):
         
         to_attend = self.make_user(username='attending_user')
         self.follow(to_attend, self.get_user())
-        self.register_for_notifications()
         
         response = self.post('/events/', {u'what': 'Testin event creation'})
         self.assertEqual(response.status, 201, 'new event')
         event = json.loads(response.read())
+        
+        self.register_for_notifications()
         
         response = self.post('/events/%s/attendants/' % event[u'id'], 
                              {u'status': status.ATTENDING}, 
@@ -246,6 +247,28 @@ class EventNotifications(GenericPollNotificationTest):
         nots = self.get_new_notifications()
         
         self.assertEqual(len(nots), 1, 'one new notification')
+        
+        
+    
+    def test_event_notification_self_attending(self):
+        
+        user1 = self.make_user(username='attending_user')
+        self.follow(self.get_user(), user1)
+        
+        response = self.post('/events/', {u'what': 'Testin event creation'},
+                             auth_user=user1)
+        self.assertEqual(response.status, 201, 'new event')
+        event = json.loads(response.read())
+        
+        self.register_for_notifications()
+        
+        response = self.post('/events/%s/attendants/' % event[u'id'], 
+                             {u'status': status.ATTENDING})
+        self.assertEqual(response.status, 200, 'attendants POST 200')
+        
+        nots = self.get_new_notifications()
+        
+        self.assertEqual(len(nots), 0, 'one new notification')
         
         
         

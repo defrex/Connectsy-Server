@@ -61,6 +61,7 @@ class UserHandler(BaseHandler):
         self.output({
             u'username': u['username'],
             u'created': u[u'created'],
+            u'id': u[u'id'],
             u'follower': (follower is not None),
             u'following': (following is not None),
         })
