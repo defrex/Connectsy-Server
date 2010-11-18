@@ -46,7 +46,7 @@ class SMSHandler(BaseHandler):
             notification = {u'type': 'attendant',
                             u'event_revision': event[u'revision'],
                             u'event_id': event[u'id'],
-                            u'attendant': user[u'id'],}
+                            u'attendant': user[u'display_name']}
         
         if len(body.lower().replace('#in', '')):
 #                    .replace('#who', '')
