@@ -107,7 +107,7 @@ class AvatarHandler(BaseHandler):
                 
         if not extension:
             raise HTTPError(415)
-           
+        
         file = StringIO(self.request.body)
         image = Image.open(file)
         image.thumbnail((100, 100), Image.ANTIALIAS)

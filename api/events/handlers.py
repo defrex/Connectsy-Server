@@ -118,7 +118,8 @@ class EventsHandler(BaseHandler):
         elif q_filter == u'creator':
             q_filter = {u'creator': self.get_argument(u'username', username),
                         u'$or': [{u'_id': {'$in': events_invited}},
-                                 {u'broadcast': True}]}
+                                 {u'broadcast': True},
+                                 {u'broadcast': False, u'creator': username}]}
         elif q_filter == u'public':
             q_filter = {u'broadcast': True}
             if category is not None:
