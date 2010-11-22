@@ -13,16 +13,19 @@ def format_date(raw_date):
         if delta < timedelta(days=7):
             if (date.day - today.day) < 2:
                 if (date.day - today.day) == 0:
-                    format = 'Today at %I:%M%p'
+                    format = 'Today'
                 else:
-                    format = 'Tomorrow at %I:%M%p'
+                    format = 'Tomorrow'
             else:
-                format = '%A at %I:%M%p'
+                format = '%A'
         else:
-            format = '%b. %d at %I:%M%p'
+            format = '%b. %d'
     else:
-        format = '%b. %d, %Y at %I:%M%p'
-    return date.strftime(format)
+        format = '%b. %d, %Y'
+    
+    formatted_date = date.strftime(format)
+    formatted_time = date.strftime('%I:%M%p')
+    return '%s at %s' % (formatted_date, formatted_time.lstrip('0'))
 
 def normalize_phone_number(number):
     number = re.sub('[^\d]', '', number)
