@@ -1,4 +1,3 @@
-from api.events.attendance import status
 from api.events.attendance.models import Attendant
 from api.events.comments.models import Comment
 from api.events.models import Event
@@ -47,9 +46,9 @@ class CommentsHandler(BaseHandler):
         #grab the data
         body = self.body_dict()
         #comment body is required, and must have content
-        if not u'comment' in body:
+        if not u'comment' in body or len(body[u'comment']) == 0:
             raise HTTPError(400)
-            
+        
         #nonce is optional
         if u'nonce' in body:
             #if another comment exists with this nonce, it's a double-post

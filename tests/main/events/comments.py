@@ -129,7 +129,19 @@ class EventComments(ConsyTestCase):
         
         got_comment = json.loads(get.read())['comments'][0]
         self.assertTrue(u'created' in got_comment, 'comment has created')
+    
+    def test_comment_validation(self):
         
+        event = Event(**{
+            u'what': 'test',
+            u'broadcast': True,
+            u'creator': self.get_user()[u'username'],
+        })
+        event.save()
+        
+        response = self.post('/events/%s/comments/' % event[u'id'], 
+                             {'comment': ''})
+        self.assertEqual(response.status, 400, 'comment POST 200')
         
         
         
