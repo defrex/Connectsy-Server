@@ -120,7 +120,7 @@ if __name__ == "__main__":
             sys.exit(2)
         sys.exit(0)
     else:
-        LOG_FILENAME = '/var/log/api1.connectsy.log'
+        LOG_FILENAME = '/var/log/%s' % settings.DOMAIN
         logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
         runserver()
 
