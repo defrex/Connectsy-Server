@@ -4,6 +4,7 @@ import httplib
 import os
 import settings
 import sys
+import logging
 
 # The connectsy daemon is a symlink to main.py. It fails to load the libraries
 # since its current directory is init.d. This solution is a major hack.
@@ -93,7 +94,6 @@ if __name__ == "__main__":
     if settings.DEVELOPMENT:
         runserver(autoreload=True)
     elif settings.DEAMON:
-        import logging
         from daemon import Daemon
         
         class ConsyDaemon(Daemon):
@@ -122,5 +122,6 @@ if __name__ == "__main__":
     else:
         LOG_FILENAME = '/var/log/%s' % settings.DOMAIN
         logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+        
         runserver()
 
