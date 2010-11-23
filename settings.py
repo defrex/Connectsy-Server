@@ -39,6 +39,7 @@ SMS_OUTPUT_URL = u'/%(api_version)s/Accounts/%(account_sid)s/SMS/Messages' % {
 }
 
 DEBUG = False
+DEAMON = False
 
 # This is at the bottom so as to override anything we set here
 from settings_local import *

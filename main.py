@@ -92,7 +92,7 @@ def runserver(*args, **kwargs):
 if __name__ == "__main__":
     if settings.DEVELOPMENT:
         runserver(autoreload=True)
-    else:
+    elif settings.DEAMON:
         import logging
         from daemon import Daemon
         
@@ -119,4 +119,8 @@ if __name__ == "__main__":
             print "Unknown command"
             sys.exit(2)
         sys.exit(0)
+    else:
+        LOG_FILENAME = '/var/log/api1.connectsy.log'
+        logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
+        runserver()
 
