@@ -28,7 +28,6 @@ class Notifier(notifier.Notifier):
         texts = list()
         
         if message[u'type'] == u'invite':
-            if not smsee[u'tz']: print 'tz fail at send'
             tz = smsee[u'tz'] or 'America/Toronto'
             
             t2 = ('%s shared a plan with you on '
