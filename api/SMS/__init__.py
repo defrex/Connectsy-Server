@@ -46,7 +46,7 @@ def register(event, contacts, tz=None):
         # make sure this user still has numbers available
         potential_numbers = [n for n in settings.TWILIO_NUMBERS]
         for reg in SMSRegister.find({u'contact_number': contact[u'number']}):
-            if from_timestamp(reg[u'expires']) > datetime.now():
+            if from_timestamp(reg[u'expires']) > datetime.now(pytz.utc):
                 potential_numbers = [n for n in potential_numbers 
                                      if n != reg[u'twilio_number']]
         if len(potential_numbers) == 0:

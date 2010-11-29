@@ -28,7 +28,7 @@ class Notifier(notifier.Notifier):
         texts = list()
         
         if message[u'type'] == u'invite':
-            tz = smsee.tz or 'America/Toronto'
+            tz = smsee[u'tz'] or 'America/Toronto'
             
             t2 = ('%s shared a plan with you on '
                   'Connectsy. ' % event[u'creator'])
