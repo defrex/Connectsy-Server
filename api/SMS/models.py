@@ -2,6 +2,7 @@ from api.SMS.sms_utils import normalize_phone_number
 from db.models import Model
 from utils import timestamp
 import db
+import pytz
 
 class SMSRegister(Model):
     __collection__ = 'sms_reg'
@@ -11,6 +12,7 @@ class SMSRegister(Model):
         u'expires': lambda: timestamp(),
         u'event': None,
         u'user': None,
+        u'tz': pytz.timezone('America/Toronto').zone,
     }
     
     def save(self):
@@ -19,7 +21,7 @@ class SMSRegister(Model):
             u'twilio_number': self[u'twilio_number'],
         }
         db.objects.sms_reg.update(find, self.__data__, upsert=True)
-
+    
     @classmethod
     def value_sanitizer(cls, field, value):
         if field == u'contact_number':

@@ -5,6 +5,7 @@ from api.users.models import User
 from db.models import Model
 from utils import timestamp
 import notifications
+import pytz
 import uuid
 
 class Event(Model):
@@ -35,7 +36,7 @@ class Event(Model):
             return att is not None
         return True
     
-    def invite(self, usernames=None, contacts=None):
+    def invite(self, usernames=None, contacts=None, tz=None):
         if usernames is not None:
             #prevent people from inviting themselves
             if self[u'creator'] in usernames:
@@ -47,9 +48,9 @@ class Event(Model):
         ret = None
         if contacts is not None:
             registered, out_of_numbers, has_username = SMS.register(self, 
-                                                                    contacts)
+                    contacts, tz=tz)
             users += has_username
-            users += registered
+            users += [reg for reg in registered if reg not in users]
             if len(out_of_numbers) > 0:
                 ret = out_of_numbers
         

@@ -1,8 +1,8 @@
-import hashlib
 
 from tornado.web import HTTPError
-
-import settings
+import time
+from datetime import datetime
+import pytz
 
 # Normalized json import.  You should only use this for decoding, and use
 # json_encoder for encoding.
@@ -18,13 +18,11 @@ except: import json
 from json_encoder import json_encoder #convoluted, but avoids a circular import
 
 # Timestamp generation
-import time
 def timestamp():
     return int(time.time()*1000)
 
-from datetime import datetime
 def from_timestamp(timestamp):
-    return datetime.fromtimestamp(timestamp/1000)
+    return datetime.fromtimestamp(timestamp/1000, pytz.utc)
 
 
 # Decorator for methods that require user authorization.  If the user

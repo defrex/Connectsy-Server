@@ -5,10 +5,10 @@ from base_handlers import BaseHandler
 from pymongo import DESCENDING
 from pymongo.objectid import ObjectId
 from tornado.web import HTTPError
-from utils import timestamp, require_auth
+from utils import require_auth
 import db
 import re
-import uuid
+import pytz
 
 
 # Events occuring more than UNTIL_LIMIT milliseconds from now won't
@@ -65,8 +65,16 @@ class EventsHandler(BaseHandler):
             usernames = self.get_user().followers()
         else:
             usernames = req_body.get(u'users', list())
+        
+        tz = req_body.get(u'timezone')
+        if tz:
+            tz = pytz.timezone(tz)
+        else:
+            tz = pytz.timezone('America/Toronto')
+        
         out_of_numbers = event.invite(usernames=usernames, 
-                                      contacts=req_body.get(u'contacts'))
+                                      contacts=req_body.get(u'contacts'),
+                                      tz=tz)
         if out_of_numbers is not None:
             resp = {'error': 'OUT_OF_NUMBERS',
                     'contacts': out_of_numbers,

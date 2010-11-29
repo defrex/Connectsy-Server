@@ -3,6 +3,7 @@ from api.events.models import Event
 from tests.base_testcase import ConsyTestCase
 from utils import timestamp
 import json
+import settings
 
 class EventNew(ConsyTestCase):
     
@@ -81,6 +82,7 @@ class EventNew(ConsyTestCase):
         self.assertEqual(len(events), 2, '2 events created')
         self.assertNotEqual(events[0][u'created'], events[1][u'created'], 
                             'created times are different')
+    
         
         
         

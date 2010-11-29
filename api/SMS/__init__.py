@@ -6,6 +6,7 @@ from notifications.models import NotificationRegister
 from urllib2 import HTTPError
 from utils import timestamp, from_timestamp
 import db
+import pytz
 import settings
 import twilio
 
@@ -19,7 +20,7 @@ class OutOfNumbersException(Exception):
         return 'There are no numbers left for: '+self.out_of_numbers
 
 
-def register(event, contacts):
+def register(event, contacts, tz=None):
     #late import to User model can use phone number normalizer
     from api.users.models import User
     if not u'id' in event:
@@ -52,12 +53,16 @@ def register(event, contacts):
             out_of_numbers.append(contact)
             continue
         
+        if tz: tz = tz.zone
+        else: tz = 'America/Toronto'
+        
         registered.append(user)
         r = SMSRegister(contact_number=contact[u'number'], 
                     twilio_number=potential_numbers[0], 
                     event=event[u'id'], 
                     expires=event[u'when'],
-                    user=user[u'id'])
+                    user=user[u'id'],
+                    tz=tz)
         r.save()
         
         #register with the notifications system as well

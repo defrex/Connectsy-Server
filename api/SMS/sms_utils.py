@@ -1,14 +1,19 @@
 
 from datetime import datetime, timedelta
+import pytz
 from utils import from_timestamp
 import re
 
 
-def format_date(raw_date):
+def format_date(raw_date, tz='Etc/UTC'):
     raw_date = int(raw_date)
-    date = from_timestamp(raw_date)
-    today = datetime.now()
+    tz = pytz.timezone(tz)
+    
+    date = from_timestamp(raw_date).astimezone(tz)
+    today = datetime.now(pytz.utc).astimezone(tz)
+    
     delta = date - today
+    
     if date.year == today.year:
         if delta < timedelta(days=7):
             if (date.day - today.day) < 2:
@@ -32,3 +37,4 @@ def normalize_phone_number(number):
     if len(number) == 10:
         number = '1%s' % number
     return number
+

@@ -3,6 +3,7 @@ from api.SMS.sms_utils import format_date
 from notifications import notifier
 from settings import SMS_OUTPUT_URL
 from urllib2 import HTTPError
+import pytz
 import settings
 import twilio
 
@@ -27,6 +28,7 @@ class Notifier(notifier.Notifier):
         texts = list()
         
         if message[u'type'] == u'invite':
+            tz = smsee.tz or 'America/Toronto'
             
             t2 = ('%s shared a plan with you on '
                   'Connectsy. ' % event[u'creator'])
@@ -37,7 +39,7 @@ class Notifier(notifier.Notifier):
                 else:
                     t2 += ". "
             if event[u'when'] is not None and event[u'when'] != 0:
-                t2 += 'When: %s. ' % format_date(event[u'when'])
+                t2 += 'When: %s. ' % format_date(event[u'when'], tz=tz)
             t2 += 'Reply to send a comment, include #in to join.'
             texts.append(t2)
             
