@@ -1,7 +1,7 @@
 
 from api.SMS.models import SMSRegister
 from api.SMS.sms_utils import format_date, normalize_phone_number
-from datetime import datetime
+from datetime import datetime, timedelta
 from notifications.models import NotificationRegister
 from urllib2 import HTTPError
 from utils import timestamp, from_timestamp
@@ -56,11 +56,18 @@ def register(event, contacts, tz=None):
         if tz: tz = tz.zone
         else: tz = 'America/Toronto'
         
+        if event[u'when']:
+            expires = event[u'when']
+        else:
+            print 'created', event[u'created']
+            expires = timestamp(dt=from_timestamp(event[u'created'])
+                                +timedelta(days=2))
+        
         registered.append(user)
         r = SMSRegister(contact_number=contact[u'number'], 
                     twilio_number=potential_numbers[0], 
                     event=event[u'id'], 
-                    expires=event[u'when'],
+                    expires=expires,
                     user=user[u'id'],
                     tz=tz)
         r.save()

@@ -6,7 +6,6 @@ import re
 
 
 def format_date(raw_date, tz='Etc/UTC'):
-    print 'formatting date to tz', tz
     raw_date = int(raw_date)
     tz = pytz.timezone(tz)
     

@@ -18,8 +18,12 @@ except: import json
 from json_encoder import json_encoder #convoluted, but avoids a circular import
 
 # Timestamp generation
-def timestamp():
-    return int(time.time()*1000)
+def timestamp(dt=None):
+    if dt is None:
+        t = time.time()
+    else:
+        t = time.mktime(dt.timetuple())
+    return int(t*1000)
 
 def from_timestamp(timestamp):
     return datetime.fromtimestamp(timestamp/1000, pytz.utc)

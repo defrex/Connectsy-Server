@@ -3,7 +3,6 @@ from api.SMS.sms_utils import format_date
 from notifications import notifier
 from settings import SMS_OUTPUT_URL
 from urllib2 import HTTPError
-import pytz
 import settings
 import twilio
 

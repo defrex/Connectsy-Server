@@ -3,7 +3,6 @@ from api.events.models import Event
 from tests.base_testcase import ConsyTestCase
 from utils import timestamp
 import json
-import settings
 
 class EventNew(ConsyTestCase):
     
