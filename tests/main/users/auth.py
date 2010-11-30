@@ -28,7 +28,6 @@ class Authentication(ConsyTestCase):
         self.assertTrue(len(response.read()) > 0, 'Registered user /token/ GET '
                          'returns a token')
     
-    
     def test_registraction_username_validation(self):
         User(**{
             u'username': u'test',
@@ -58,4 +57,17 @@ class Authentication(ConsyTestCase):
         response = self.get('/token/', {u'password': u'passw0rd',
                                         u'username': u'TesT'}, auth=False)
         self.assertEqual(response.status, 200, '/token/ GET')
+    
+    def test_password_change(self):
+        new_pass = u'newPassw0rd'
+        
+        response = self.post('/users/%s/' % self.get_user()[u'username'], {
+            u'old_password': self._gen_user_password_,
+            u'new_password': new_pass,
+        })
+        self.assertEqual(response.status, 200, 'password changed')
+        
+        self.assertEqual(User.get(self.get_user()[u'id'])[u'password'], 
+                         User.hash_password(new_pass), 
+                         'password changed succesfully')
     

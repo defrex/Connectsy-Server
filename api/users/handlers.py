@@ -30,8 +30,7 @@ class UserHandler(BaseHandler):
     def put(self, username):
         username = username.lower()
         #make sure we're not overwriting an existing user
-        u = User.get({u'username': username})
-        if u is not None: 
+        if User.get({u'username': username}) is not None: 
             raise HTTPError(409)
         
         #set up the password
@@ -47,6 +46,38 @@ class UserHandler(BaseHandler):
         }).save()
         
         self.set_status(201)
+    
+    @require_auth
+    def post(self, username):
+        username = username.lower()
+        #make sure we're not overwriting an existing user
+        user = User.get({u'username': username})
+        if user is None: 
+            raise HTTPError(404)
+        
+        if username != self.get_session()[u'username']:
+            raise HTTPError(403)
+        
+        old_password = self.body_dict().get('old_password')
+        if old_password is None:
+            self.output({'error': 'MISSING_FIELD',
+                         'field': 'old_password'}, 400)
+            return
+        
+        new_password = self.body_dict().get('new_password')
+        if new_password is None:
+            self.output({'error': 'MISSING_FIELD',
+                         'field': 'new_password'}, 400)
+            return
+        
+        if not User.hash_password(old_password) == user[u'password']:
+            self.output({'error': 'INVALID_PASSWORD',
+                         'field': 'old_password'}, 400)
+            return
+        
+        user[u'password'] = User.hash_password(new_password)
+        user.save()
+
     
     @require_auth
     def get(self, username):

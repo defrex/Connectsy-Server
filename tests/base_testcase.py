@@ -92,13 +92,14 @@ class ConsyTestCase(TestCase):
         return self.__user__
     
     __user_number__ = 0
+    _gen_user_password_ = u'passw0rd'
     def make_user(self, username=None):
         if username is None:
             self.__user_number__ += 1
             username = 'testuser%i' % self.__user_number__
         u = User(**{
                 u'username': username, 
-                u'password': 'passw0rd',
+                u'password': User.hash_password(self._gen_user_password_),
                 u'number': '+16656656665',
                 u'revision': uuid.uuid1().hex,
                 u'created': timestamp(),
