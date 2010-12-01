@@ -13,6 +13,7 @@ from api.categories.handlers import CategoriesHandler
 from api.extras.maps.handlers import MapsHandler
 from api.SMS.handlers import SMSHandler
 from api.extras.email.handlers import BetaEmailHandler
+from api.social.twitter.handlers import TwitterHandler
 
 handlers = [
     (r"/", RootHandler),
@@ -33,5 +34,6 @@ handlers = [
     (r"/extras/maps/", MapsHandler),
     (r"/extras/SMS/", SMSHandler),
     (r"/extras/beta_email/", BetaEmailHandler),
+    (r"/social/twitter/(?P<username>\w*)/", TwitterHandler),
 ]
 
