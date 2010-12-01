@@ -66,11 +66,7 @@ class EventsHandler(BaseHandler):
         else:
             usernames = req_body.get(u'users', list())
         
-        tz = req_body.get(u'timezone')
-        if tz:
-            tz = pytz.timezone(tz)
-        else:
-            tz = pytz.timezone('America/Toronto')
+        tz = req_body.get(u'timezone', 'America/Toronto')
         
         out_of_numbers = event.invite(usernames=usernames, 
                                       contacts=req_body.get(u'contacts'),

@@ -53,8 +53,7 @@ def register(event, contacts, tz=None):
             out_of_numbers.append(contact)
             continue
         
-        if tz: tz = tz.zone
-        else: tz = 'America/Toronto'
+        if tz is None: tz = 'America/Toronto'
         
         if event[u'when']:
             expires = event[u'when']
